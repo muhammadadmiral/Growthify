@@ -5,7 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 export default function Sidebar({ isOpen, onClose }) {
   const location = useLocation();
   
-  // Menutup sidebar ketika route berubah pada layar mobile
+  // Close sidebar when route changes on mobile screens
   useEffect(() => {
     if (isOpen && window.innerWidth < 1024) {
       onClose();
@@ -27,7 +27,7 @@ export default function Sidebar({ isOpen, onClose }) {
       path: '/physical', 
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path fillRule="evenodd" d="M10 3a1 1 0 00-1 1v5.5H4a1 1 0 000 2h5V17a1 1 0 102 0v-5.5h5a1 1 0 000-2h-5V4a1 1 0 00-1-1z" clipRule="evenodd" />
+          <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z" />
         </svg>
       )
     },
@@ -72,10 +72,10 @@ export default function Sidebar({ isOpen, onClose }) {
 
   return (
     <>
-      {/* Overlay untuk mobile - hanya muncul saat sidebar terbuka */}
+      {/* Overlay for mobile - only appears when sidebar is open */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-neutral-900 bg-opacity-50 z-20 lg:hidden"
+          className="fixed inset-0 bg-secondary-900 bg-opacity-30 backdrop-blur-sm z-20 lg:hidden"
           onClick={onClose}
           aria-hidden="true"
         ></div>
@@ -83,16 +83,16 @@ export default function Sidebar({ isOpen, onClose }) {
       
       {/* Sidebar */}
       <aside 
-        className={`fixed top-0 left-0 h-full bg-white z-30 transition-all duration-300 ease-in-out shadow-md w-64 lg:w-64 lg:static lg:z-0 transform ${
+        className={`fixed top-0 left-0 h-full bg-content z-30 transition-all duration-300 ease-in-out shadow-elegant w-64 lg:w-64 lg:static lg:z-0 transform ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0`}
+        } lg:translate-x-0 border-r border-primary-100`}
         aria-label="Sidebar"
       >
         {/* Logo area */}
-        <div className="h-16 flex items-center justify-center border-b border-neutral-200">
+        <div className="h-16 flex items-center justify-center border-b border-primary-100">
           <div className="font-heading font-bold text-2xl"
                style={{
-                 backgroundImage: 'linear-gradient(90deg, #38A169, #3182CE)',
+                 backgroundImage: 'linear-gradient(90deg, #319795, #3182CE)',
                  WebkitBackgroundClip: 'text',
                  backgroundClip: 'text',
                  color: 'transparent'
@@ -103,7 +103,7 @@ export default function Sidebar({ isOpen, onClose }) {
           {/* Close button - only visible on mobile */}
           <button 
             onClick={onClose}
-            className="absolute right-4 top-3 lg:hidden text-neutral-500 hover:text-neutral-700"
+            className="absolute right-4 top-3 lg:hidden text-text-muted hover:text-text-dark transition-colors"
             aria-label="Close sidebar"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -124,14 +124,14 @@ export default function Sidebar({ isOpen, onClose }) {
                     className={`group flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                       isActive
                         ? 'bg-primary-50 text-primary-600'
-                        : 'text-neutral-600 hover:bg-neutral-100'
+                        : 'text-text hover:bg-secondary-50'
                     }`}
                     aria-current={isActive ? 'page' : undefined}
                   >
                     <span className={`mr-3 ${
                       isActive 
                         ? 'text-primary-500' 
-                        : 'text-neutral-500 group-hover:text-neutral-600'
+                        : 'text-text-muted group-hover:text-primary-400'
                     }`}>
                       {item.icon}
                     </span>
@@ -157,7 +157,7 @@ export default function Sidebar({ isOpen, onClose }) {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  background: 'linear-gradient(135deg, #38A169, #3182CE, #ED8936)',
+                  background: 'linear-gradient(135deg, #319795, #3182CE, #38A169)',
                   zIndex: -1
                 }}
               ></div>
@@ -166,7 +166,7 @@ export default function Sidebar({ isOpen, onClose }) {
               <p className="text-sm opacity-90 mb-4">Access personalized coaching and exclusive content</p>
               <button 
                 className="w-full bg-white font-semibold py-2 px-3 rounded-lg text-sm hover:bg-opacity-90 transition-all"
-                style={{ color: '#38A169' }}
+                style={{ color: '#319795' }}
               >
                 Upgrade Now
               </button>
@@ -175,20 +175,20 @@ export default function Sidebar({ isOpen, onClose }) {
         </nav>
         
         {/* User section at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-neutral-200 bg-white">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-primary-100 bg-content">
           <div className="flex items-center">
             <div 
               className="h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold"
-              style={{ background: 'linear-gradient(90deg, #4DC293, #5098E3)' }}
+              style={{ background: 'linear-gradient(90deg, #319795, #3182CE)' }}
             >
-              JS
+              AJ
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-neutral-800">John Smith</p>
-              <p className="text-xs text-neutral-500">Free Plan</p>
+              <p className="text-sm font-medium text-text-dark">Alex Johnson</p>
+              <p className="text-xs text-text-muted">Free Plan</p>
             </div>
             <button 
-              className="ml-auto text-neutral-400 hover:text-neutral-600"
+              className="ml-auto text-text-muted hover:text-text transition-colors"
               aria-label="Settings"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
