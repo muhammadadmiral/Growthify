@@ -17,5 +17,5 @@ jobs:
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GROWTHIFY_D97A9 }}
-          projectId: growthify-d97a9
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GROWTHIFY_WEB }}
+          projectId: growthify-web

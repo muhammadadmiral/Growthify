@@ -1,17 +1,66 @@
 // src/components/route/ProtectedRoute.jsx
-import { Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { auth, checkProfileCompletion } from '../config/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export default function ProtectedRoute({ children }) {
-  // Mock authentication check - replace with your actual auth logic
-  const isAuthenticated = () => {
-    // In a real app, check localStorage, context, or auth state
-    return localStorage.getItem('growthify_auth_token') !== null;
-  };
+  const [authStatus, setAuthStatus] = useState({
+    isAuthenticated: false,
+    isProfileCompleted: false,
+    isLoading: true
+  });
+  const location = useLocation();
 
-  if (!isAuthenticated()) {
-    // Redirect to login if not authenticated
-    return <Navigate to="/login" replace />;
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const isProfileComplete = await checkProfileCompletion(user.uid);
+          setAuthStatus({
+            isAuthenticated: true,
+            isProfileCompleted: isProfileComplete,
+            isLoading: false
+          });
+        } catch (error) {
+          console.error('Error checking profile:', error);
+          setAuthStatus({
+            isAuthenticated: true,
+            isProfileCompleted: false,
+            isLoading: false
+          });
+        }
+      } else {
+        setAuthStatus({
+          isAuthenticated: false,
+          isProfileCompleted: false,
+          isLoading: false
+        });
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Tampilkan loading jika masih memeriksa status
+  if (authStatus.isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary-500"></div>
+      </div>
+    );
   }
 
+  // Jika tidak terotentikasi, arahkan ke login
+  if (!authStatus.isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Jika terotentikasi tapi profil belum lengkap, arahkan ke complete profile
+  if (!authStatus.isProfileCompleted) {
+    return <Navigate to="/complete-profile" state={{ from: location }} replace />;
+  }
+
+  // Jika sudah lengkap, tampilkan children (halaman yang diminta)
   return children;
 }

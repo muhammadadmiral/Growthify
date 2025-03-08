@@ -1,5 +1,7 @@
+// src/pages/Register.jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { registerWithEmailAndPassword } from '../config/firebase';
 import InputForm from '../components/login/InputForm';
 import SubmitButton from '../components/login/SubmitButton';
 import SocialLogin from '../components/login/SocialLogin';
@@ -25,9 +27,11 @@ export default function Register() {
     
     // Clear error when user types
     if (errors[name]) {
-      setErrors({
-        ...errors,
-        [name]: ''
+      setErrors(prev => {
+        const newErrors = {...prev};
+        delete newErrors[name];
+        delete newErrors.form;
+        return newErrors;
       });
     }
   };
@@ -66,24 +70,32 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Reset form-level errors
+    setErrors({});
+    
+    // Validate form
     if (!validateForm()) return;
     
     setIsLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Register user with Firebase
+      const user = await registerWithEmailAndPassword(
+        formData.name, 
+        formData.email, 
+        formData.password
+      );
       
-      // For demo purposes, successful registration
-      console.log('Registration successful:', formData);
-      
-      // Redirect to onboarding
-      navigate('/onboarding');
+      // Redirect to email verification page
+      navigate('/email-verification');
     } catch (error) {
       console.error('Registration failed:', error);
-      setErrors({
-        form: 'Registration failed. Please try again.'
-      });
+      
+      // Set error message
+      setErrors(prev => ({
+        ...prev,
+        form: error.message || 'Registration failed. Please try again.'
+      }));
     } finally {
       setIsLoading(false);
     }
@@ -110,6 +122,7 @@ export default function Register() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow-elegant sm:rounded-lg sm:px-10">
+          {/* Tampilkan pesan error umum */}
           {errors.form && (
             <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
               {errors.form}
