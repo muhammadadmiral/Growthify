@@ -2,144 +2,69 @@
 import { Link } from 'react-router-dom';
 
 export default function HeroSection() {
-  // Styles untuk komponen
-  const styles = {
-    heroSection: {
-      position: 'relative',
-      padding: '80px 20px',
-      textAlign: 'center',
-      overflow: 'hidden',
-    },
-    heroBackground: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      background: 'linear-gradient(135deg, #E6F6EF, #FFFFFF, #E6F1FB)',
-      transform: 'skewY(-6deg) translateY(-36px)',
-      transformOrigin: 'top right',
-      zIndex: 0,
-    },
-    heroContent: {
-      position: 'relative',
-      maxWidth: '1100px',
-      margin: '0 auto',
-      zIndex: 2,
-    },
-    heroTitle: {
-      fontSize: '2.5rem',
-      fontWeight: 'bold',
-      marginBottom: '1.5rem',
-      color: '#1A202C',
-      lineHeight: 1.2,
-      fontFamily: "'Poppins', system-ui, sans-serif",
-    },
-    gradientText: {
-      background: 'linear-gradient(90deg, #38A169, #3182CE)',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      backgroundClip: 'text',
-    },
-    heroSubtitle: {
-      fontSize: '1.25rem',
-      color: '#4A5568',
-      maxWidth: '800px',
-      margin: '0 auto 2rem auto',
-    },
-    buttonContainer: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '1rem',
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginBottom: '3rem',
-    },
-    primaryButton: {
-      padding: '0.75rem 2rem',
-      backgroundColor: '#38A169',
-      color: 'white',
-      borderRadius: '0.375rem',
-      fontWeight: '500',
-      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-      border: 'none',
-      cursor: 'pointer',
-      textDecoration: 'none',
-      display: 'inline-block',
-    },
-    secondaryButton: {
-      padding: '0.75rem 2rem',
-      backgroundColor: 'white',
-      color: '#4A5568',
-      borderRadius: '0.375rem',
-      fontWeight: '500',
-      border: '1px solid #E2E8F0',
-      cursor: 'pointer',
-      textDecoration: 'none',
-      display: 'inline-block',
-    },
-    featureList: {
-      display: 'flex',
-      justifyContent: 'center',
-      gap: '1rem',
-      flexWrap: 'wrap',
-      fontSize: '0.875rem',
-      color: '#718096',
-    },
-    featureItem: {
-      display: 'flex',
-      alignItems: 'center',
-    },
-    checkMark: {
-      color: '#38A169',
-      marginRight: '0.25rem',
-    },
-  };
-
-  // Media query untuk responsive styles
-  const isSmallScreen = window.innerWidth < 640;
-  
-  if (isSmallScreen) {
-    styles.buttonContainer.flexDirection = 'column';
-    styles.featureList.flexDirection = 'column';
-    styles.heroTitle.fontSize = '2rem';
-  } else {
-    styles.buttonContainer.flexDirection = 'row';
-  }
-
   return (
-    <div style={styles.heroSection}>
-      <div style={styles.heroBackground}></div>
-      <div style={styles.heroContent}>
-        <h1 style={styles.heroTitle}>
-          Transform Your <span style={styles.gradientText}>Life</span> With Growthify
+    <div className="relative py-20 overflow-hidden">
+      {/* Hero Background - Updated with new gradient */}
+      <div 
+        className="absolute inset-0 transform skewY(-6deg) origin-top-right -translate-y-36 z-0"
+        style={{ 
+          background: 'linear-gradient(135deg, #E6FFFA, #EBF8FF, #F0FFF4)',
+          boxShadow: 'inset 0 0 30px rgba(49, 151, 149, 0.1)'
+        }}
+      ></div>
+      
+      {/* Content */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight font-heading text-text-dark">
+          Transform Your <span className="gradient-text">Life</span> With Growthify
         </h1>
-        <p style={styles.heroSubtitle}>
+        
+        <p className="max-w-2xl mx-auto text-lg md:text-xl mb-10 text-text">
           Your personal development companion for mindset, habits, and body transformation. 
           Expert guidance tailored to your unique journey.
         </p>
-        <div style={styles.buttonContainer}>
-          <Link to="/register" style={styles.primaryButton}>
+        
+        <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <Link
+            to="/register"
+            className="px-8 py-3 rounded-md bg-primary-500 text-white font-medium shadow-lg hover:bg-primary-600 transform hover:scale-105 transition-all duration-200"
+          >
             Start Your Journey
           </Link>
-          <Link to="/features" style={styles.secondaryButton}>
+          
+          <Link
+            to="/features"
+            className="px-8 py-3 rounded-md border border-secondary-300 bg-white text-secondary-700 font-medium hover:bg-secondary-50 transition-all duration-200"
+          >
             Explore Features
           </Link>
         </div>
-        <div style={styles.featureList}>
-          <div style={styles.featureItem}>
-            <span style={styles.checkMark}>✓</span>
+        
+        {/* Feature checkmarks */}
+        <div className="mt-10 flex flex-wrap justify-center gap-6 text-sm text-text">
+          <div className="flex items-center">
+            <span className="text-primary-500 mr-2">✓</span>
             <span>Personalized Plans</span>
           </div>
-          <div style={styles.featureItem}>
-            <span style={styles.checkMark}>✓</span>
+          <div className="flex items-center">
+            <span className="text-primary-500 mr-2">✓</span>
             <span>Expert Guidance</span>
           </div>
-          <div style={styles.featureItem}>
-            <span style={styles.checkMark}>✓</span>
+          <div className="flex items-center">
+            <span className="text-primary-500 mr-2">✓</span>
             <span>Progress Tracking</span>
           </div>
         </div>
+        
+        {/* Decorative elements */}
+        <div 
+          className="absolute bottom-0 right-0 w-64 h-64 opacity-20 rounded-full" 
+          style={{ background: 'radial-gradient(circle, #38B2AC, transparent)' }}
+        ></div>
+        <div 
+          className="absolute top-40 left-10 w-32 h-32 opacity-20 rounded-full hidden md:block" 
+          style={{ background: 'radial-gradient(circle, #4299E1, transparent)' }}
+        ></div>
       </div>
     </div>
   );

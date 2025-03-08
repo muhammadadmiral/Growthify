@@ -13,8 +13,8 @@ export default function MainLayout({ children }) {
     document.body.style.margin = '0';
     document.body.style.padding = '0';
     document.body.style.width = '100%';
-    document.body.style.backgroundColor = '#FFFFFF';
-    document.body.style.color = '#1A202C';
+    document.body.style.backgroundColor = '#F0F9FF'; // Background light blue
+    document.body.style.color = '#334155';
     
     // Reset root styling juga
     const rootElement = document.getElementById('root');
@@ -37,10 +37,16 @@ export default function MainLayout({ children }) {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-white text-neutral-900 overflow-x-hidden">
-      <Navbar />
-      <main className="flex-grow w-full">{children}</main>
-      <Footer />
+    <div className="flex flex-col min-h-screen w-full text-text-dark overflow-x-hidden bg-pattern-circuit relative">
+      {/* Gradient overlay untuk memberikan nuansa warna tambahan */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary-50/50 to-secondary-50/50 pointer-events-none"></div>
+      
+      {/* Main content */}
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <Navbar />
+        <main className="flex-grow w-full">{children}</main>
+        <Footer />
+      </div>
     </div>
   );
 }
