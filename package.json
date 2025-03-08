@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
     "build": "vite build",
-    "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
     "@tailwindcss/postcss": "^4.0.12",
     "date-fns": "^4.1.0",
     "firebase": "^11.4.0",
