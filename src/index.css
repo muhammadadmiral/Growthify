@@ -1,21 +1,73 @@
-/* Modified index.css */
+/* Modified index.css with new color scheme */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
 
-/* Tailwind directives (jika menggunakan Tailwind) */
+/* Tailwind directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
+  /* Primary Colors - Teal */
+  --color-primary-50: #E6FFFA;
+  --color-primary-100: #B2F5EA;
+  --color-primary-200: #81E6D9;
+  --color-primary-300: #4FD1C5;
+  --color-primary-400: #38B2AC;
+  --color-primary-500: #319795;
+  --color-primary-600: #2C7A7B;
+  --color-primary-700: #285E61;
+  --color-primary-800: #234E52;
+  --color-primary-900: #1D4044;
+  
+  /* Secondary Colors - Blue */
+  --color-secondary-50: #EBF8FF;
+  --color-secondary-100: #BEE3F8;
+  --color-secondary-200: #90CDF4;
+  --color-secondary-300: #63B3ED;
+  --color-secondary-400: #4299E1;
+  --color-secondary-500: #3182CE;
+  --color-secondary-600: #2B6CB0;
+  --color-secondary-700: #2C5282;
+  --color-secondary-800: #2A4365;
+  --color-secondary-900: #1A365D;
+  
+  /* Accent Colors - Green */
+  --color-accent-50: #F0FFF4;
+  --color-accent-100: #C6F6D5;
+  --color-accent-200: #9AE6B4;
+  --color-accent-300: #68D391;
+  --color-accent-400: #48BB78;
+  --color-accent-500: #38A169;
+  --color-accent-600: #2F855A;
+  --color-accent-700: #276749;
+  --color-accent-800: #22543D;
+  --color-accent-900: #1C4532;
+  
+  /* Text colors */
+  --color-text-light: #F8FAFC;
+  --color-text: #334155;
+  --color-text-dark: #0F172A;
+  --color-text-muted: #64748B;
+  
+  /* Background colors */
+  --color-background-light: #F0F9FF;
+  --color-background: #EDF2F7;
+  --color-background-dark: #1E293B;
+  
+  /* Content colors */
+  --color-content-light: #E0F2FE;
+  --color-content: #FFFFFF;
+  --color-content-dark: #0F172A;
+  
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  /* Override warna default Vite */
+  /* Override color scheme */
   color-scheme: light;
-  color: #1A202C;
-  background-color: #FFFFFF;
+  color: var(--color-text);
+  background-color: var(--color-background);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -23,13 +75,15 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Override style dasar Vite */
+/* Override style dasar */
 body {
   margin: 0;
   padding: 0;
   min-width: 320px;
   min-height: 100vh;
   display: block;
+  background-color: var(--color-background);
+  color: var(--color-text);
 }
 
 /* Hapus center positioning yang menyebabkan masalah layout */
@@ -49,16 +103,20 @@ body {
 /* Override untuk links */
 a {
   font-weight: 500;
-  color: #38A169; /* primary-500 */
+  color: var(--color-primary-500);
   text-decoration: inherit;
 }
 
 a:hover {
-  color: #2F8A59; /* primary-600 */
+  color: var(--color-primary-600);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
+  color: var(--color-text-dark);
 }
 
 h1 {
-  font-family: 'Poppins', sans-serif;
   font-size: 2.25rem;
   line-height: 1.2;
 }
@@ -74,14 +132,39 @@ button {
   transition: all 0.25s;
 }
 
-/* Override dark mode preferences dari Vite */
+button:focus,
+button:focus-visible {
+  outline: 2px solid var(--color-primary-400);
+  outline-offset: 2px;
+}
+
+/* Custom components */
+.card {
+  background-color: var(--color-content);
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-primary-100);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.shadow-elegant {
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.bg-gradient-premium {
+  background-image: linear-gradient(135deg, var(--color-primary-500), var(--color-secondary-500));
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary-500), var(--color-secondary-500));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Dark mode preferences override */
 @media (prefers-color-scheme: dark) {
   :root {
-    color: #1A202C;
-    background-color: #FFFFFF;
-  }
-  
-  button {
-    background-color: #EDF2F7;
+    color: var(--color-text);
+    background-color: var(--color-background);
   }
 }
