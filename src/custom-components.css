@@ -1,0 +1,280 @@
+/* custom-components.css - Komponen custom yang dapat digunakan di seluruh aplikasi */
+
+/* 
+ * COMPONENT STYLING UNTUK APLIKASI GROWTHIFY
+ * File ini berisi styling untuk komponen-komponen yang sering digunakan
+ */
+
+/* === BUTTONS === */
+
+/* Primary Button */
+.btn-primary {
+    background-color: #38A169; /* primary-500 */
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    display: inline-block;
+  }
+  
+  .btn-primary:hover {
+    background-color: #2F8A59; /* primary-600 */
+    color: white;
+  }
+  
+  /* Secondary Button */
+  .btn-secondary {
+    background-color: white;
+    color: #4A5568; /* neutral-600 */
+    border: 1px solid #E2E8F0; /* neutral-200 */
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-block;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #F7FAFC; /* neutral-50 */
+  }
+  
+  /* Link Button */
+  .btn-link {
+    color: #38A169; /* primary-500 */
+    padding: 0.5rem;
+    font-weight: 500;
+    transition: color 0.2s;
+    background: transparent;
+    border: none;
+    display: inline-block;
+  }
+  
+  .btn-link:hover {
+    color: #2F8A59; /* primary-600 */
+    text-decoration: underline;
+  }
+  
+  /* === CARDS === */
+  
+  /* Basic Card */
+  .card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid #E2E8F0; /* neutral-200 */
+  }
+  
+  /* Premium Card */
+  .card-premium {
+    background-color: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    padding: 1.5rem;
+    border: 1px solid #E2E8F0; /* neutral-200 */
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Gradient Card */
+  .card-gradient {
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    color: white;
+  }
+  
+  .card-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #38A169, #3182CE);
+    z-index: -1;
+  }
+  
+  /* === BADGES === */
+  
+  /* Basic Badge */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+  .badge-primary {
+    background-color: #E6F6EF; /* primary-50 */
+    color: #27744A; /* primary-700 */
+  }
+  
+  .badge-secondary {
+    background-color: #E6F1FB; /* secondary-50 */
+    color: #235792; /* secondary-700 */
+  }
+  
+  .badge-accent {
+    background-color: #FDF1E7; /* accent-50 */
+    color: #A96126; /* accent-700 */
+  }
+  
+  /* === GRADIENT TEXT === */
+  
+  /* Primary Gradient Text */
+  .gradient-text {
+    background: linear-gradient(90deg, #38A169, #3182CE);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+  }
+  
+  /* === AVATARS === */
+  
+  /* User Avatar */
+  .avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(90deg, #4DC293, #5098E3);
+  }
+  
+  .avatar-sm {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.75rem;
+  }
+  
+  .avatar-lg {
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.25rem;
+  }
+  
+  /* === FORMS === */
+  
+  /* Form Group */
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #4A5568; /* neutral-600 */
+  }
+  
+  .form-control {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #2D3748; /* neutral-700 */
+    background-color: white;
+    background-clip: padding-box;
+    border: 1px solid #CBD5E0; /* neutral-300 */
+    border-radius: 0.375rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  }
+  
+  .form-control:focus {
+    border-color: #38A169; /* primary-500 */
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.2);
+  }
+  
+  /* === NAVIGATION === */
+  
+  /* Sidebar Navigation Link */
+  .nav-link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: 0.375rem;
+    color: #4A5568; /* neutral-600 */
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  
+  .nav-link:hover {
+    background-color: #F7FAFC; /* neutral-50 */
+    color: #2D3748; /* neutral-700 */
+  }
+  
+  .nav-link.active {
+    background-color: #E6F6EF; /* primary-50 */
+    color: #38A169; /* primary-500 */
+  }
+  
+  .nav-link svg {
+    margin-right: 0.75rem;
+  }
+  
+  /* === UTILITY CLASSES === */
+  
+  /* Shadows */
+  .shadow-sm {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+  
+  .shadow {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+  
+  .shadow-md {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .shadow-xl {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+  
+  /* Spacing utility classes */
+  .mt-0 { margin-top: 0; }
+  .mr-0 { margin-right: 0; }
+  .mb-0 { margin-bottom: 0; }
+  .ml-0 { margin-left: 0; }
+  
+  .mt-1 { margin-top: 0.25rem; }
+  .mr-1 { margin-right: 0.25rem; }
+  .mb-1 { margin-bottom: 0.25rem; }
+  .ml-1 { margin-left: 0.25rem; }
+  
+  .mt-2 { margin-top: 0.5rem; }
+  .mr-2 { margin-right: 0.5rem; }
+  .mb-2 { margin-bottom: 0.5rem; }
+  .ml-2 { margin-left: 0.5rem; }
+  
+  .mt-4 { margin-top: 1rem; }
+  .mr-4 { margin-right: 1rem; }
+  .mb-4 { margin-bottom: 1rem; }
+  .ml-4 { margin-left: 1rem; }
+  
+  .mt-8 { margin-top: 2rem; }
+  .mr-8 { margin-right: 2rem; }
+  .mb-8 { margin-bottom: 2rem; }
+  .ml-8 { margin-left: 2rem; }
+  
+  .p-0 { padding: 0; }
+  .p-1 { padding: 0.25rem; }
+  .p-2 { padding: 0.5rem; }
+  .p-4 { padding: 1rem; }
+  .p-8 { padding: 2rem; }

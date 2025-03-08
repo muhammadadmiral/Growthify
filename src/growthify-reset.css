@@ -1,0 +1,303 @@
+/* growthify-reset.css - Reset CSS yang lebih kuat untuk Growthify */
+
+/* 
+ * RESET DASAR YANG LEBIH KUAT
+ * Memastikan semua elemen memiliki styling yang konsisten
+ */
+ *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Reset HTML & body */
+  html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #1A202C;
+    background-color: #FFFFFF;
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* 
+   * PERBAIKAN UTAMA UNTUK BODY 
+   * Memaksa penggunaan block layout dan menghapus semua centering
+   */
+  body {
+    display: block !important;
+    place-items: initial !important;
+    align-items: initial !important;
+    justify-content: initial !important;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+  
+  /* 
+   * ROOT ELEMENT RESET 
+   * Memperbaiki container utama React
+   */
+  #root {
+    width: 100%;
+    height: 100%;
+    min-height: 100vh;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: left !important;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  
+  /* 
+   * APLIKASI CONTAINER FIX 
+   * Pastikan container app memiliki full width
+   */
+  .app-container {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  
+  /* 
+   * CONTAINER CLASS 
+   * Definisi container class yang responsif untuk layout
+   */
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  @media (min-width: 640px) {
+    .container {
+      max-width: 640px;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .container {
+      max-width: 768px;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .container {
+      max-width: 1024px;
+    }
+  }
+  
+  @media (min-width: 1280px) {
+    .container {
+      max-width: 1280px;
+    }
+  }
+  
+  /* 
+   * RESET ELEMENT STYLING 
+   * Mengatur styling dasar untuk elemen umum
+   */
+  
+  /* Styling untuk links */
+  a {
+    color: #38A169;  /* primary-500 */
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s ease-in-out;
+  }
+  
+  a:hover {
+    color: #2F8A59;  /* primary-600 */
+  }
+  
+  /* Heading styling */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', system-ui, sans-serif;
+    margin: 0;
+    line-height: 1.2;
+  }
+  
+  h1 {
+    font-size: 2.25rem;
+  }
+  
+  h2 {
+    font-size: 1.875rem;
+  }
+  
+  h3 {
+    font-size: 1.5rem;
+  }
+  
+  /* Button styling */
+  button, 
+  .btn {
+    border-radius: 0.375rem;
+    border: 1px solid transparent;
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.25s;
+    background-color: transparent;
+  }
+  
+  button:focus,
+  .btn:focus {
+    outline: 2px solid #38A169; /* primary-500 */
+    outline-offset: 2px;
+  }
+  
+  /* Input styling */
+  input, 
+  textarea, 
+  select {
+    font-family: inherit;
+    font-size: 1rem;
+    line-height: 1.5;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    border: 1px solid #CBD5E0; /* neutral-300 */
+    background-color: #FFFFFF;
+    transition: all 0.15s ease-in-out;
+  }
+  
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: #38A169; /* primary-500 */
+    box-shadow: 0 0 0 2px rgba(56, 161, 105, 0.2);
+  }
+  
+  /* 
+   * TEXT STYLING UTILITIES 
+   * Kelas untuk gradient text dan styling teks lainnya
+   */
+  .text-transparent {
+    color: transparent;
+  }
+  
+  .bg-clip-text {
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+  
+  .text-gradient {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+  
+  /* 
+   * LAYOUT UTILITIES 
+   * Utility classes dasar untuk memperbaiki layout
+   */
+  .flex {
+    display: flex;
+  }
+  
+  .flex-col {
+    flex-direction: column;
+  }
+  
+  .flex-row {
+    flex-direction: row;
+  }
+  
+  .flex-grow {
+    flex-grow: 1;
+  }
+  
+  .flex-1 {
+    flex: 1 1 0%;
+  }
+  
+  .items-center {
+    align-items: center;
+  }
+  
+  .items-start {
+    align-items: flex-start;
+  }
+  
+  .items-end {
+    align-items: flex-end;
+  }
+  
+  .justify-center {
+    justify-content: center;
+  }
+  
+  .justify-between {
+    justify-content: space-between;
+  }
+  
+  .justify-start {
+    justify-content: flex-start;
+  }
+  
+  .justify-end {
+    justify-content: flex-end;
+  }
+  
+  /* 
+   * FIX UNTUK MODE HIGH CONTRAST 
+   * Perbaikan untuk mode high contrast yang tidak menggunakan -ms-high-contrast-adjust
+   */
+  @media (forced-colors: active) {
+    /* Styling untuk mode high contrast */
+    :root {
+      --button-text: ButtonText;
+      --button-background: ButtonFace;
+      --link-color: LinkText;
+      --border-color: ButtonBorder;
+      --background-color: Canvas;
+      --text-color: CanvasText;
+    }
+    
+    /* Perbaiki tombol dan link di mode high contrast */
+    button, 
+    .btn,
+    [role="button"] {
+      forced-color-adjust: none;
+      color: var(--button-text) !important;
+      background-color: var(--button-background) !important;
+      border: 1px solid var(--border-color) !important;
+    }
+    
+    a {
+      forced-color-adjust: none;
+      color: var(--link-color) !important;
+    }
+    
+    /* Perbaiki text dengan background gradient */
+    .bg-gradient-to-r.text-transparent,
+    [class*="bg-gradient-"].text-transparent,
+    .text-transparent.bg-clip-text,
+    .text-gradient {
+      forced-color-adjust: none;
+      background-image: none !important;
+      color: var(--text-color) !important;
+      -webkit-background-clip: initial !important;
+      background-clip: initial !important;
+    }
+  }
+  
+  /* Untuk menghindari warning -ms-high-contrast-adjust */
+  * {
+    -ms-high-contrast-adjust: auto;
+  }
