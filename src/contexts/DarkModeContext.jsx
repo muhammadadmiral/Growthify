@@ -21,21 +21,48 @@ export const DarkModeProvider = ({ children }) => {
     if (isDarkMode) {
       root.classList.add('dark');
       localStorage.setItem('theme', 'dark');
+      
+      // Update meta theme-color for mobile devices
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', '#0F172A'); // dark background color
+      }
     } else {
       root.classList.remove('dark');
       localStorage.setItem('theme', 'light');
+      
+      // Reset meta theme-color
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', '#F0F9FF'); // light background color
+      }
     }
+    
+    // Apply transition class after theme change to enable smooth transitions
+    // but prevent transition on initial load
+    setTimeout(() => {
+      root.classList.add('transition-colors');
+    }, 100);
+    
   }, [isDarkMode]);
 
   // Toggle dark mode
   const toggleDarkMode = () => {
     setIsDarkMode(prevMode => !prevMode);
   };
+  
+  // Force a specific mode
+  const setMode = (mode) => {
+    if (mode === 'dark' || mode === 'light') {
+      setIsDarkMode(mode === 'dark');
+    }
+  };
 
   return (
     <DarkModeContext.Provider value={{ 
       isDarkMode, 
-      toggleDarkMode 
+      toggleDarkMode,
+      setMode
     }}>
       {children}
     </DarkModeContext.Provider>
@@ -51,7 +78,7 @@ export const useDarkMode = () => {
   return context;
 };
 
-// Function to get styled theme variables
+// Theme variables helper
 export const getThemeColors = (isDark) => {
   return {
     background: isDark ? 'var(--color-background-dark)' : 'var(--color-background-light)',

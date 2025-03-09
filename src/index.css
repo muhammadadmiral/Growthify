@@ -1,4 +1,4 @@
-/* Modified index.css with dark mode support */
+/* index.css - Complete stylesheet for Growthify application */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
 
@@ -7,9 +7,9 @@
 @tailwind components;
 @tailwind utilities;
 
-html {
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
+/* =========================================
+   VARIABLES AND ROOT SETTINGS
+   ========================================= */
 
 :root {
   /* Primary Colors - Teal */
@@ -64,23 +64,29 @@ html {
   --color-content: #FFFFFF;
   --color-content-dark: #0F172A;
   
+  /* Base Typography */
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  /* Override color scheme */
+  /* Color scheme and base colors */
   color-scheme: light;
   color: var(--color-text);
   background-color: var(--color-background);
 
+  /* Font rendering */
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Dark mode variables */
+/* =========================================
+   DARK MODE VARIABLES
+   ========================================= */
+
 .dark {
+  /* Inverted Primary Colors - Teal */
   --color-primary-50: #1D4044;
   --color-primary-100: #234E52;
   --color-primary-200: #285E61;
@@ -92,6 +98,7 @@ html {
   --color-primary-800: #B2F5EA;
   --color-primary-900: #E6FFFA;
   
+  /* Inverted Secondary Colors - Blue */
   --color-secondary-50: #1A365D;
   --color-secondary-100: #2A4365;
   --color-secondary-200: #2C5282;
@@ -103,6 +110,7 @@ html {
   --color-secondary-800: #BEE3F8;
   --color-secondary-900: #EBF8FF;
   
+  /* Inverted Accent Colors - Green */
   --color-accent-50: #1C4532;
   --color-accent-100: #22543D;
   --color-accent-200: #276749;
@@ -114,59 +122,168 @@ html {
   --color-accent-800: #C6F6D5;
   --color-accent-900: #F0FFF4;
   
+  /* Dark mode text colors */
   --color-text-light: #F8FAFC;
   --color-text: #E2E8F0;
   --color-text-dark: #F1F5F9;
   --color-text-muted: #94A3B8;
   
+  /* Dark mode background colors */
   --color-background-light: #0F172A;
   --color-background: #111827;
   --color-background-dark: #030712;
   
+  /* Dark mode content colors */
   --color-content-light: #1E293B;
   --color-content: #1E293B;
   --color-content-dark: #0F172A;
 
+  /* Dark mode base colors */
+  color-scheme: dark;
   color: var(--color-text);
   background-color: var(--color-background-dark);
 }
 
-/* Override style dasar */
+/* =========================================
+   BASE STYLES
+   ========================================= */
+
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 body {
   margin: 0;
   padding: 0;
   min-width: 320px;
   min-height: 100vh;
-  display: block;
+  display: block !important; /* Prevent display:flex from other libraries */
+  place-items: initial !important; /* Reset grid alignment */
+  align-items: initial !important;
+  justify-content: initial !important;
   background-color: var(--color-background);
   color: var(--color-text);
+  width: 100%;
+  overflow-x: hidden;
+  position: relative;
 }
 
-/* Dark mode body overrides */
-.dark body {
-  background-color: var(--color-background-dark);
+#root {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* =========================================
+   TRANSITIONS AND ANIMATIONS
+   ========================================= */
+
+/* Core transitions for dark mode */
+.transition-colors,
+.transition-colors * {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+/* Language transition animations */
+.language-fade-enter {
+  opacity: 0;
+  transform: translateY(5px);
+}
+
+.language-fade-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.language-fade-exit {
+  opacity: 1;
+}
+
+.language-fade-exit-active {
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: opacity 200ms, transform 200ms;
+}
+
+/* Language switcher container - prevents layout shifts during animation */
+.language-switcher-container {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Optional: Add nice fade transitions for all text elements when language changes */
+body[data-changing-language="true"] .translatable {
+  transition: opacity 300ms ease;
+  opacity: 0.5;
+}
+
+body[data-changing-language="false"] .translatable {
+  transition: opacity 300ms ease;
+  opacity: 1;
+}
+
+/* Create placeholder shimmer effect during language transitions */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.language-loading {
+  background: linear-gradient(90deg, 
+    rgba(255, 255, 255, 0.1), 
+    rgba(255, 255, 255, 0.2), 
+    rgba(255, 255, 255, 0.1)
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* =========================================
+   TYPOGRAPHY
+   ========================================= */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
+  color: var(--color-text-dark);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
   color: var(--color-text-light);
 }
 
-/* Hapus center positioning yang menyebabkan masalah layout */
-body {
-  display: block !important;
-  place-items: unset !important;
+h1 {
+  font-size: 2.25rem;
 }
 
-/* Penyesuaian untuk root container */
-#root {
-  width: 100%;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+h2 {
+  font-size: 1.875rem;
 }
 
-/* Override untuk links */
+h3 {
+  font-size: 1.5rem;
+}
+
 a {
   font-weight: 500;
   color: var(--color-primary-500);
   text-decoration: inherit;
+  transition: color 0.15s ease-in-out;
 }
 
 a:hover {
@@ -181,21 +298,12 @@ a:hover {
   color: var(--color-primary-300);
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Poppins', sans-serif;
-  color: var(--color-text-dark);
-}
+/* =========================================
+   FORM ELEMENTS
+   ========================================= */
 
-.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
-  color: var(--color-text-light);
-}
-
-h1 {
-  font-size: 2.25rem;
-  line-height: 1.2;
-}
-
-button {
+button, 
+.btn {
   border-radius: 0.375rem;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
@@ -204,20 +312,225 @@ button {
   font-family: inherit;
   cursor: pointer;
   transition: all 0.25s;
+  background-color: transparent;
 }
 
 button:focus,
-button:focus-visible {
+.btn:focus {
   outline: 2px solid var(--color-primary-400);
   outline-offset: 2px;
 }
 
-/* Custom components */
+input, 
+textarea, 
+select {
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--color-neutral-300);
+  background-color: var(--color-content);
+  transition: all 0.15s ease-in-out;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 2px rgba(56, 161, 105, 0.2);
+}
+
+.dark input, 
+.dark textarea, 
+.dark select {
+  background-color: var(--color-content-dark);
+  border-color: var(--color-secondary-800);
+  color: var(--color-text-light);
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: var(--color-primary-400);
+  box-shadow: 0 0 0 2px rgba(79, 209, 197, 0.2);
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* =========================================
+   DARK MODE COMPONENT STYLING
+   ========================================= */
+
+/* Consistent dark mode styling for components */
+.dark .card,
+.dark .bg-white {
+  @apply bg-gray-800 border-gray-700;
+}
+
+.dark .shadow-elegant {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+}
+
+.dark .border-neutral-100,
+.dark .border-neutral-200,
+.dark .border-primary-100 {
+  @apply border-gray-700;
+}
+
+.dark .text-neutral-900,
+.dark .text-neutral-800,
+.dark .text-text-dark {
+  @apply text-white;
+}
+
+.dark .text-neutral-700,
+.dark .text-neutral-600,
+.dark .text-text {
+  @apply text-gray-300;
+}
+
+.dark .text-neutral-500,
+.dark .text-neutral-400,
+.dark .text-text-muted {
+  @apply text-gray-400;
+}
+
+.dark .bg-neutral-50,
+.dark .bg-primary-50,
+.dark .bg-secondary-50,
+.dark .bg-accent-50,
+.dark .bg-content-light {
+  @apply bg-gray-800;
+}
+
+.dark .bg-neutral-100,
+.dark .bg-primary-100,
+.dark .bg-secondary-100,
+.dark .bg-accent-100 {
+  @apply bg-gray-700;
+}
+
+.dark .bg-content,
+.dark .bg-white {
+  @apply bg-gray-800;
+}
+
+.dark .bg-background {
+  @apply bg-gray-900;
+}
+
+/* Button styling */
+.dark .btn-primary,
+.dark button[type="submit"] {
+  @apply bg-primary-600 hover:bg-primary-700 text-white;
+}
+
+.dark .btn-secondary {
+  @apply bg-gray-700 text-white border-gray-600 hover:bg-gray-600;
+}
+
+.dark .btn-link,
+.dark a.text-primary-600 {
+  @apply text-primary-400 hover:text-primary-300;
+}
+
+/* Menu and nav styling */
+.dark .nav-link {
+  @apply text-gray-300 hover:text-white hover:bg-gray-700;
+}
+
+.dark .nav-link.active {
+  @apply bg-primary-900/30 text-primary-400;
+}
+
+/* Status colors */
+.dark .text-green-800 {
+  @apply text-green-300;
+}
+
+.dark .text-red-800 {
+  @apply text-red-300;
+}
+
+.dark .bg-green-100 {
+  @apply bg-green-900;
+}
+
+.dark .bg-red-100 {
+  @apply bg-red-900;
+}
+
+/* Progress bars and interactive elements */
+.dark .bg-primary-500 {
+  @apply bg-primary-600;
+}
+
+.dark .hover\:bg-primary-600:hover {
+  @apply hover:bg-primary-700;
+}
+
+/* Badge styling fixes */
+.dark .badge-primary {
+  @apply bg-primary-900 text-primary-300;
+}
+
+.dark .badge-secondary {
+  @apply bg-blue-900 text-blue-300;
+}
+
+.dark .badge-accent {
+  @apply bg-green-900 text-green-300;
+}
+
+/* Drop shadows */
+.dark .shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+.dark .shadow {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.dark .shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
+/* Gradient backgrounds */
+.dark .bg-gradient-premium {
+  background: linear-gradient(135deg, #2C7A7B, #2B6CB0);
+}
+
+.dark .from-primary-50,
+.dark .to-secondary-50 {
+  --tw-gradient-from: theme('colors.gray.800');
+  --tw-gradient-to: theme('colors.gray.700');
+}
+
+/* Gradient text adjustments */
+.dark .gradient-text {
+  background: linear-gradient(90deg, #4FD1C5, #63B3ED);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* =========================================
+   CUSTOM COMPONENTS
+   ========================================= */
+
+/* Card styling */
 .card {
   background-color: var(--color-content);
   border-radius: 0.5rem;
   border: 1px solid var(--color-primary-100);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .dark .card {
@@ -226,6 +539,7 @@ button:focus-visible {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.12);
 }
 
+/* Shadow styles */
 .shadow-elegant {
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
@@ -234,6 +548,15 @@ button:focus-visible {
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
 }
 
+.shadow-premium {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.dark .shadow-premium {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.15);
+}
+
+/* Gradient backgrounds */
 .bg-gradient-premium {
   background-image: linear-gradient(135deg, var(--color-primary-500), var(--color-secondary-500));
 }
@@ -256,125 +579,239 @@ button:focus-visible {
   color: transparent;
 }
 
-/* Dark mode form controls */
-.dark input, 
-.dark textarea, 
-.dark select {
-  background-color: var(--color-content-dark);
-  border-color: var(--color-secondary-800);
-  color: var(--color-text-light);
-}
-
-.dark input:focus,
-.dark textarea:focus,
-.dark select:focus {
-  border-color: var(--color-primary-400);
-  box-shadow: 0 0 0 2px rgba(79, 209, 197, 0.2);
-}
-
-.dark input::placeholder,
-.dark textarea::placeholder {
-  color: var(--color-text-muted);
-}
-
-/* Dark mode buttons */
-.dark .btn-primary {
-  background-color: var(--color-primary-500);
-  color: white;
-}
-
-.dark .btn-primary:hover {
-  background-color: var(--color-primary-600);
-}
-
-.dark .btn-secondary {
-  background-color: var(--color-content-dark);
-  color: var(--color-text-light);
-  border: 1px solid var(--color-secondary-700);
-}
-
-.dark .btn-secondary:hover {
-  background-color: var(--color-content-light);
-}
-
-/* Images and media in dark mode */
-.dark img {
-  filter: brightness(0.9);
-}
-
-/* Animation for dark mode transition */
-.transition-dark {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-}
-
-/* Notification and badge styles for dark mode */
-.dark .badge-primary {
-  background-color: var(--color-primary-900);
-  color: var(--color-primary-300);
-}
-
-.dark .badge-secondary {
-  background-color: var(--color-secondary-900);
-  color: var(--color-secondary-300);
-}
-
-.dark .badge-accent {
-  background-color: var(--color-accent-900);
-  color: var(--color-accent-300);
-}
-
-/* Code blocks and syntax highlighting for dark mode */
-.dark code {
-  background-color: var(--color-content-dark);
-  color: var(--color-primary-300);
-  border: 1px solid var(--color-content-light);
-}
-
-.dark pre {
-  background-color: var(--color-content-dark);
-  border: 1px solid var(--color-content-light);
-}
-
-/* Table styles for dark mode */
-.dark table {
-  border-color: var(--color-content-light);
-}
-
-.dark th {
-  background-color: var(--color-content-light);
-  color: var(--color-text-light);
-}
-
-.dark td {
-  border-color: var(--color-content-light);
-}
-
-.dark tr:nth-child(even) {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-/* Modal and dialog styles for dark mode */
-.dark .modal, 
-.dark .dialog {
-  background-color: var(--color-content-dark);
-  border: 1px solid var(--color-content-light);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-}
-
-.dark .modal-header, 
-.dark .dialog-header {
-  border-bottom-color: var(--color-content-light);
-}
-
-.dark .modal-footer, 
-.dark .dialog-footer {
-  border-top-color: var(--color-content-light);
-}
-
-/* Dark mode preferences override */
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: var(--color-text);
-    background-color: var(--color-background);
+/* Mobile/responsive adjustments */
+@media (max-width: 640px) {
+  h1 {
+    font-size: 1.875rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+  
+  h3 {
+    font-size: 1.25rem;
+  }
+  
+  .card {
+    padding: 1rem;
   }
 }
+
+/* =========================================
+   UTILITY HELPERS
+   ========================================= */
+
+/* Prevent utility generation in production - explicitly define the ones we need */
+.bg-pattern-circuit {
+  background-image: url('/assets/patterns/circuit-pattern.svg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.bg-pattern-dots {
+  background-image: radial-gradient(var(--color-primary-100) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.dark .bg-pattern-dots {
+  background-image: radial-gradient(var(--color-primary-800) 1px, transparent 1px);
+}
+
+/* High contrast mode overrides */
+@media (forced-colors: active) {
+  :root {
+    --button-text: ButtonText;
+    --button-background: ButtonFace;
+    --link-color: LinkText;
+    --border-color: ButtonBorder;
+    --background-color: Canvas;
+    --text-color: CanvasText;
+  }
+  
+  button, 
+  .btn,
+  [role="button"] {
+    forced-color-adjust: none;
+    color: var(--button-text) !important;
+    background-color: var(--button-background) !important;
+    border: 1px solid var(--border-color) !important;
+  }
+  
+  a {
+    forced-color-adjust: none;
+    color: var(--link-color) !important;
+  }
+  
+  .bg-gradient-to-r.text-transparent,
+  [class*="bg-gradient-"].text-transparent,
+  .text-transparent.bg-clip-text,
+  .text-gradient,
+  .gradient-text {
+    forced-color-adjust: none;
+    background-image: none !important;
+    color: var(--text-color) !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+  }
+}
+
+/* Accessibility improvements */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Dark mode preferences override (system preference) */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light):not(.dark) {
+    color: var(--color-text-light);
+    background-color: var(--color-background-dark);
+  }
+}
+
+@keyframes shine {
+  from {
+    transform: translateX(-100%) skewX(20deg);
+  }
+  to {
+    transform: translateX(150%) skewX(20deg);
+  }
+}
+
+.animate-shine {
+  animation: shine 1.5s ease-in-out infinite;
+  animation-fill-mode: forwards;
+  animation-delay: 0.5s;
+}
+
+/* Fixed width container for text to prevent layout shifts */
+.text-container {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+}
+
+/* Pulse animation for notification badge */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Smooth transition for all elements */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+/* Special effect when hovering on navbar items */
+.nav-link:hover::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #319795, #3182CE);
+  transform: scaleX(1);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #319795, #3182CE);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+/* Styles for the language switcher animations */
+.lang-switcher-text {
+  width: 32px;
+  text-align: center;
+  display: inline-block;
+}
+
+/* Glass effect for navbar */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark .glass-effect {
+  background: rgba(17, 24, 39, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(55, 65, 81, 0.3);
+}
+
+/* Gradient backgrounds */
+.gradient-primary {
+  background: linear-gradient(90deg, #319795, #3182CE);
+}
+
+.gradient-hover {
+  transition: all 0.3s ease;
+}
+
+.gradient-hover:hover {
+  box-shadow: 0 4px 20px -5px rgba(49, 151, 149, 0.4);
+  transform: translateY(-2px);
+}
+
+/* Tambahkan ini ke index.css untuk menangani perpindahan bahasa secara global */
+.translatable-container {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  min-width: max-content; /* Mencegah penyusutan */
+}
+
+/* Animasi saat bahasa berubah */
+[data-changing-language="true"] .translatable {
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+}
+
+[data-changing-language="false"] .translatable {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+/* Tambahkan class untuk fixed width container pada teks yang berubah */
+.fixed-width-xs { min-width: 60px; }
+.fixed-width-sm { min-width: 80px; }
+.fixed-width-md { min-width: 120px; }
+.fixed-width-lg { min-width: 160px; }
+.fixed-width-xl { min-width: 200px; }
+
+/* Mencegah pergeseran tata letak dengan menerapkan min-height */
+.min-h-text { min-height: 1.5em; }
+.min-h-heading { min-height: 1.2em; }
