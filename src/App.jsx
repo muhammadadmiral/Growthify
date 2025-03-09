@@ -5,50 +5,50 @@ import { useState, useEffect } from 'react';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { DarkModeProvider } from './contexts/DarkModeContext';
 import MainLayout from './components/layout/MainLayout';
-import ProtectedRoute from './route/ProtectedRoute';
-import Navbar from './components/layout/Navbar';
-import Sidebar from './components/layout/Sidebar';
+import DashboardLayout from './components/layout/DashboardLayout';
+import AuthLayout from './components/layout/AuthLayout';
+import LoadingFallback from './components/common/LoadingFallback';
 
 // Eager load auth-related pages for better UX
-import Login from './pages/Login';
-import Register from './pages/Register';
-import CompleteProfile from './pages/CompleteProfile';
-import ForgotPassword from './pages/ForgotPassword';
-import EmailVerification from './pages/EmailVerification';
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+import CompleteProfile from './pages/auth/CompleteProfile';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import EmailVerification from './pages/auth/EmailVerification';
+import PasswordResetSent from './pages/auth/PasswordResetSent';
+import ResetPassword from './pages/auth/ResetPassword';
 
 // Lazy load other pages
-const Home = lazy(() => import('./pages/Home'));
-const Features = lazy(() => import('./pages/Features'));
-const Pricing = lazy(() => import('./pages/Pricing'));
-const Blog = lazy(() => import('./pages/Blog'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const Profile = lazy(() => import('./pages/Profile'));
-const NotFound = lazy(() => import('./pages/NotFound'));
+const Home = lazy(() => import('./pages/public/Home'));
+const Features = lazy(() => import('./pages/public/Features'));
+const Pricing = lazy(() => import('./pages/public/Pricing'));
+const Blog = lazy(() => import('./pages/blog/Blog'));
+const BlogPost = lazy(() => import('./pages/blog/BlogPost'));
+const BlogTag = lazy(() => import('./pages/blog/BlogTag'));
+const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
+const Profile = lazy(() => import('./pages/user/Profile'));
+const PhysicalGoals = lazy(() => import('./pages/dashboard/PhysicalGoals'));
+const MindsetGoals = lazy(() => import('./pages/dashboard/MindsetGoals'));
+const HabitTracker = lazy(() => import('./pages/dashboard/HabitTracker'));
+const Communities = lazy(() => import('./pages/dashboard/Communities'));
+const NotFound = lazy(() => import('./pages/public/NotFound'));
 
-// Loading fallback component
-const LoadingFallback = () => (
-  <div className="flex justify-center items-center min-h-screen">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary-500"></div>
-  </div>
-);
+// Protected route component
+import ProtectedRoute from './routes/ProtectedRoute';
 
 function App() {
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
-  // Fix untuk body styling
+
+  // Fix body styling issues
   useEffect(() => {
-    // Reset default styling
     document.body.style.display = 'block';
     document.body.style.placeItems = 'unset';
     document.body.style.minHeight = '100vh';
     document.body.style.margin = '0';
     document.body.style.padding = '0';
     document.body.style.width = '100%';
-    document.body.style.backgroundColor = '#FFFFFF';
-    document.body.style.color = '#1A202C';
     
-    // Reset root styling
     const rootElement = document.getElementById('root');
     if (rootElement) {
       rootElement.style.width = '100%';
@@ -60,23 +60,9 @@ function App() {
       rootElement.style.display = 'flex';
       rootElement.style.flexDirection = 'column';
     }
-    
-    // Reset App.css container styles
-    const appContainer = document.querySelector('.app-container');
-    if (appContainer) {
-      appContainer.style.width = '100%';
-      appContainer.style.maxWidth = 'none';
-      appContainer.style.margin = '0';
-      appContainer.style.padding = '0';
-      appContainer.style.textAlign = 'left';
-    }
   }, []);
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
-
-  // Determine if we're on a dashboard route
+  // Determine which layout to use based on the current route
   const isDashboardRoute = location.pathname.startsWith('/dashboard') || 
                            location.pathname.startsWith('/profile') || 
                            location.pathname.startsWith('/physical') || 
@@ -84,90 +70,88 @@ function App() {
                            location.pathname.startsWith('/habits') || 
                            location.pathname.startsWith('/communities');
   
-  // Determine if we're on an auth route
   const isAuthRoute = location.pathname === '/login' || 
                       location.pathname === '/register' ||
                       location.pathname === '/complete-profile' ||
                       location.pathname === '/forgot-password' ||
+                      location.pathname === '/password-reset-sent' ||
+                      location.pathname === '/reset-password' ||
                       location.pathname === '/email-verification';
-  
-  // Wrap everything in our providers
+
   return (
     <DarkModeProvider>
       <LanguageProvider>
         <Suspense fallback={<LoadingFallback />}>
           {/* Dashboard layout */}
           {isDashboardRoute && (
-            <div className="app-container w-full h-screen flex overflow-hidden">
-              <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-              <div className="flex-1 flex flex-col overflow-hidden">
-                <Navbar onMenuClick={toggleSidebar} isLoggedIn={true} />
-                <div className="flex-1 overflow-auto bg-neutral-50 dark:bg-gray-900 p-0">
-                  <Routes>
-                    <Route path="/dashboard" element={
-                      <ProtectedRoute>
-                        <Dashboard />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/profile" element={
-                      <ProtectedRoute>
-                        <Profile />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/physical" element={
-                      <ProtectedRoute>
-                        <div className="p-6 dark:text-gray-200">Physical Goals Content</div>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/mindset" element={
-                      <ProtectedRoute>
-                        <div className="p-6 dark:text-gray-200">Mindset Content</div>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/habits" element={
-                      <ProtectedRoute>
-                        <div className="p-6 dark:text-gray-200">Habits Content</div>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/communities" element={
-                      <ProtectedRoute>
-                        <div className="p-6 dark:text-gray-200">Communities Content</div>
-                      </ProtectedRoute>
-                    } />
-                  </Routes>
-                </div>
-              </div>
-            </div>
+            <DashboardLayout 
+              isSidebarOpen={isSidebarOpen} 
+              toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+              closeSidebar={() => setIsSidebarOpen(false)}
+            >
+              <Routes>
+                <Route path="/dashboard" element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/profile" element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                } />
+                <Route path="/physical" element={
+                  <ProtectedRoute>
+                    <PhysicalGoals />
+                  </ProtectedRoute>
+                } />
+                <Route path="/mindset" element={
+                  <ProtectedRoute>
+                    <MindsetGoals />
+                  </ProtectedRoute>
+                } />
+                <Route path="/habits" element={
+                  <ProtectedRoute>
+                    <HabitTracker />
+                  </ProtectedRoute>
+                } />
+                <Route path="/communities" element={
+                  <ProtectedRoute>
+                    <Communities />
+                  </ProtectedRoute>
+                } />
+              </Routes>
+            </DashboardLayout>
           )}
 
-          {/* Auth layout - no header/footer */}
+          {/* Auth layout */}
           {isAuthRoute && (
-            <div className="app-container w-full">
+            <AuthLayout>
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/complete-profile" element={<CompleteProfile />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/password-reset-sent" element={<PasswordResetSent />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/email-verification" element={<EmailVerification />} />
               </Routes>
-            </div>
+            </AuthLayout>
           )}
 
-          {/* Main layout with header/footer for public pages */}
+          {/* Main layout for public pages */}
           {!isDashboardRoute && !isAuthRoute && (
-            <div className="app-container w-full">
-              <MainLayout>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/features" element={<Features />} />
-                  <Route path="/pricing" element={<Pricing />} />
-                  <Route path="/blog" element={<Blog />} />
-                  <Route path="/blog/:id" element={<Blog />} />
-                  <Route path="/blog/tag/:tag" element={<Blog />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </MainLayout>
-            </div>
+            <MainLayout>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/features" element={<Features />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:id" element={<BlogPost />} />
+                <Route path="/blog/tag/:tag" element={<BlogTag />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </MainLayout>
           )}
         </Suspense>
       </LanguageProvider>

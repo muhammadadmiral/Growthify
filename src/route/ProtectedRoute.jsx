@@ -1,10 +1,16 @@
-// src/components/route/ProtectedRoute.jsx
+// src/routes/ProtectedRoute.jsx
 import { useState, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { auth, db } from '../../config/firebase';
+import { auth, db } from '../config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import LoadingFallback from '../common/LoadingFallback';
+
+// Loading component
+const LoadingFallback = () => (
+  <div className="flex justify-center items-center min-h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary-500"></div>
+  </div>
+);
 
 export default function ProtectedRoute({ children, requireAdmin = false }) {
   const [authStatus, setAuthStatus] = useState({
