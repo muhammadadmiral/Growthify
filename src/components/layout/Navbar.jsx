@@ -1,11 +1,39 @@
-// src/components/layout/Navbar.jsx
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { MoonIcon, SunIcon } from 'lucide-react'; // Pastikan sudah diinstal
 
 export default function Navbar({ onMenuClick, isLoggedIn = false }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const location = useLocation();
+  const { language, toggleLanguage } = useLanguage();
+
+  // Toggle Dark Mode
+  const toggleDarkMode = () => {
+    const newDarkModeState = !isDarkMode;
+    setIsDarkMode(newDarkModeState);
+    
+    // Tambahkan logika untuk mengubah tema
+    if (newDarkModeState) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
+
+  // Cek tema saat komponen dimuat
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      setIsDarkMode(true);
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
 
   // Event listener for scroll
   useEffect(() => {
@@ -22,71 +50,156 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
   }, []);
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 w-full z-10 transition-all duration-300 ${
-      isScrolled 
-        ? 'bg-content shadow-md py-2' 
-        : 'bg-transparent py-4'
-    }`}>
+    <nav 
+      className={`
+        fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 
+        ${isScrolled 
+          ? 'bg-gradient-to-r from-primary-50 to-secondary-50 backdrop-blur-md shadow-lg' 
+          : 'bg-gradient-to-r from-primary-100/50 to-secondary-100/50 backdrop-blur-md'
+        }
+      `}
+      style={{
+        WebkitBackdropFilter: 'blur(10px)',
+        borderBottom: 'none'
+      }}
+    >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
+          {/* Logo Section */}
           <div className="flex items-center">
             {/* Mobile menu button */}
             {isLoggedIn && (
               <button
                 onClick={onMenuClick}
-                className="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-text-muted hover:text-primary-500 hover:bg-primary-50 focus:outline-none"
+                className={`
+                  lg:hidden inline-flex items-center justify-center p-2 rounded-md 
+                  transition-colors duration-300
+                  ${isScrolled 
+                    ? 'text-gray-600 hover:bg-gray-100' 
+                    : 'text-primary-700 hover:bg-primary-100/20'
+                  }
+                `}
                 aria-label="Open menu"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  className="h-6 w-6" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M4 6h16M4 12h16M4 18h16" 
+                  />
                 </svg>
               </button>
             )}
             
             {/* Logo */}
             <Link to="/" className="flex-shrink-0 flex items-center ml-0 lg:ml-0">
-              <div className={`font-heading font-bold text-xl md:text-2xl ${
-                !isScrolled ? 'text-text-light' : ''
-              }`}
-                   style={{
-                     backgroundImage: 'linear-gradient(90deg, #319795, #3182CE)',
-                     WebkitBackgroundClip: 'text',
-                     backgroundClip: 'text',
-                     color: 'transparent'
-                   }}>
+              <div 
+                className={`
+                  font-heading font-bold text-xl md:text-2xl 
+                  ${!isScrolled ? 'text-primary-700' : 'text-gray-800'}
+                `}
+                style={{
+                  backgroundImage: 'linear-gradient(90deg, #319795, #3182CE)',
+                  WebkitBackgroundClip: 'text',
+                  backgroundClip: 'text',
+                  color: 'transparent'
+                }}
+              >
                 Growthify
               </div>
             </Link>
           </div>
           
-          {/* Navigation links - only show on larger screens when not logged in */}
+          {/* Navigation Links */}
           {!isLoggedIn && (
             <div className="hidden md:ml-6 md:flex md:items-center md:space-x-6">
-              <Link to="/features" className={`px-3 py-2 text-sm font-medium transition-colors ${
-                isScrolled ? 'text-text hover:text-primary-500' : 'text-text-light hover:text-white'
-              }`}>
-                Features
-              </Link>
-              <Link to="/pricing" className={`px-3 py-2 text-sm font-medium transition-colors ${
-                isScrolled ? 'text-text hover:text-primary-500' : 'text-text-light hover:text-white'
-              }`}>
-                Pricing
-              </Link>
-              <Link to="/testimonials" className={`px-3 py-2 text-sm font-medium transition-colors ${
-                isScrolled ? 'text-text hover:text-primary-500' : 'text-text-light hover:text-white'
-              }`}>
-                Testimonials
-              </Link>
-              <Link to="/blog" className={`px-3 py-2 text-sm font-medium transition-colors ${
-                isScrolled ? 'text-text hover:text-primary-500' : 'text-text-light hover:text-white'
-              }`}>
-                Blog
-              </Link>
+              {['Features', 'Pricing', 'Testimonials', 'Blog'].map((link) => (
+                <Link 
+                  key={link} 
+                  to={`/${link.toLowerCase()}`} 
+                  className={`
+                    px-3 py-2 text-sm font-medium transition-all duration-300 
+                    rounded-lg hover:bg-primary-100/10 
+                    ${isScrolled 
+                      ? 'text-gray-700 hover:text-primary-600' 
+                      : 'text-primary-700 hover:text-primary-900'
+                    }
+                  `}
+                >
+                  {link}
+                </Link>
+              ))}
             </div>
           )}
           
-          {/* Right side buttons */}
-          <div className="flex items-center">
+          {/* Right Side Buttons */}
+          <div className="flex items-center space-x-4">
+            {/* Dark Mode Toggle */}
+            <motion.button
+              onClick={toggleDarkMode}
+              className={`
+                p-2 rounded-full transition-all duration-300 
+                hover:bg-primary-100/20
+                ${isScrolled 
+                  ? 'text-gray-600 hover:bg-gray-100' 
+                  : 'text-primary-700 hover:bg-primary-100/30'
+                }
+              `}
+              whileHover={{ rotate: 180 }}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Toggle Dark Mode"
+            >
+              {isDarkMode ? (
+                <SunIcon className="h-5 w-5" />
+              ) : (
+                <MoonIcon className="h-5 w-5" />
+              )}
+            </motion.button>
+
+            {/* Language Switcher */}
+            <motion.button 
+              onClick={toggleLanguage}
+              className={`
+                relative flex items-center justify-center 
+                w-20 h-10 rounded-full transition-all duration-300
+                hover:bg-primary-100/10
+                ${isScrolled 
+                  ? 'text-gray-700 hover:bg-gray-100' 
+                  : 'text-primary-700 hover:bg-primary-100/20'
+                }
+              `}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              aria-label="Switch Language"
+            >
+              <AnimatePresence mode="wait">
+                <motion.div 
+                  key={language}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute flex items-center"
+                >
+                  <img 
+                    src={`/flags/${language === 'en' ? 'us_flag' : 'idn_flag'}.png`} 
+                    alt={language === 'en' ? 'English' : 'Bahasa Indonesia'}
+                    className="w-5 h-5 mr-2 rounded-full object-cover shadow-sm"
+                  />
+                  <span className="text-sm">
+                    {language === 'en' ? 'EN' : 'ID'}
+                  </span>
+                </motion.div>
+              </AnimatePresence>
+            </motion.button>
+
             {isLoggedIn ? (
               <>
                 {/* Notification bell */}

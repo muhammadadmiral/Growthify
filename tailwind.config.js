@@ -1,11 +1,42 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  
+  darkMode: 'class',
+  
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+
+  theme: {
+    extend: {
+      // Tambahkan variasi warna untuk dark mode
+      colors: {
+        // Existing color configurations...
+        
+        // Dark mode spesifik
+        dark: {
+          background: '#1E293B',
+          text: '#F8FAFC',
+          primary: '#4FD1C5',
+          secondary: '#63B3ED',
+          accent: '#48BB78'
+        }
+      },
+      
+      // Optional: tambahkan transisi untuk smooth dark mode switch
+      transitionProperty: {
+        'dark-mode': 'background-color, color, border-color, text-decoration-color, fill, stroke'
+      }
+    }
+  },
   safelist: [
-    // Safelist untuk warna tema
+    // Tambahkan dark mode safelist
+    'dark:bg-dark-background',
+    'dark:text-dark-text',
+    'dark:bg-dark-primary',
+    'dark:text-dark-secondary',
+    
     {
       pattern: /bg-(primary|secondary|accent|neutral)-(50|100|200|300|400|500|600|700|800|900)/,
     },

@@ -1,6 +1,7 @@
 // src/App.jsx
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { LanguageProvider } from './contexts/LanguageContext';
 import MainLayout from './components/layout/MainLayout';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -66,47 +67,53 @@ function App() {
   // Layout untuk halaman dashboard
   if (isDashboardRoute) {
     return (
-      <div className="app-container w-full h-screen flex overflow-hidden">
-        <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Navbar onMenuClick={toggleSidebar} isLoggedIn={true} />
-          <div className="flex-1 overflow-auto bg-neutral-50 p-0">
-            <Routes>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/physical" element={<div className="p-6">Physical Goals Content</div>} />
-              <Route path="/mindset" element={<div className="p-6">Mindset Content</div>} />
-              <Route path="/habits" element={<div className="p-6">Habits Content</div>} />
-              <Route path="/communities" element={<div className="p-6">Communities Content</div>} />
-            </Routes>
+      <LanguageProvider>
+        <div className="app-container w-full h-screen flex overflow-hidden">
+          <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <Navbar onMenuClick={toggleSidebar} isLoggedIn={true} />
+            <div className="flex-1 overflow-auto bg-neutral-50 p-0">
+              <Routes>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/physical" element={<div className="p-6">Physical Goals Content</div>} />
+                <Route path="/mindset" element={<div className="p-6">Mindset Content</div>} />
+                <Route path="/habits" element={<div className="p-6">Habits Content</div>} />
+                <Route path="/communities" element={<div className="p-6">Communities Content</div>} />
+              </Routes>
+            </div>
           </div>
         </div>
-      </div>
+      </LanguageProvider>
     );
   }
 
   // Layout untuk halaman auth (login/register)
   if (location.pathname === '/login' || location.pathname === '/register') {
     return (
-      <div className="app-container w-full">
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-        </Routes>
-      </div>
+      <LanguageProvider>
+        <div className="app-container w-full">
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Routes>
+        </div>
+      </LanguageProvider>
     );
   }
 
   // Layout default dengan MainLayout
   return (
-    <div className="app-container w-full">
-      <MainLayout>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </MainLayout>
-    </div>
+    <LanguageProvider>
+      <div className="app-container w-full">
+        <MainLayout>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </MainLayout>
+      </div>
+    </LanguageProvider>
   );
 }
 
