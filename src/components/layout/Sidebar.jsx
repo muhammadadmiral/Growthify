@@ -3,8 +3,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDarkMode } from '../../contexts/DarkModeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { signOut } from 'firebase/auth';
-import { auth } from '../../config/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Sidebar({ isOpen, onClose }) {
@@ -14,61 +12,116 @@ export default function Sidebar({ isOpen, onClose }) {
   const { language } = useLanguage();
   const sidebarRef = useRef(null);
   const [activeGroup, setActiveGroup] = useState(null);
+  const [hoveredItem, setHoveredItem] = useState(null);
+  const [animateButtonHover, setAnimateButtonHover] = useState(false);
   
   // Translations
   const t = {
     en: {
       dashboard: 'Dashboard',
-      physicalGoals: 'Physical Goals',
-      mindset: 'Mindset',
-      habits: 'Habits',
-      communities: 'Communities',
-      profile: 'Profile',
-      settings: 'Settings',
-      freePlan: 'Free Plan',
+      physicalGoals: {
+        title: 'Physical Growth',
+        body: 'Body Transformation',
+        nutrition: 'Nutrition & Diet',
+        workout: 'Workout Plans',
+        skincare: 'Skincare Routine'
+      },
+      mindset: {
+        title: 'Mental Growth',
+        goals: 'Goal Setting',
+        motivation: 'Motivation Center',
+        reflection: 'Reflection Journal'
+      },
+      habits: {
+        title: 'Habit Building',
+        tracker: 'Habit Tracker',
+        streaks: 'Streak Analytics',
+        challenges: 'Challenges'
+      },
+      social: {
+        title: 'Social Growth',
+        communities: 'Communities',
+        partners: 'Accountability Partners',
+        events: 'Live Events'
+      },
       premium: {
         title: 'Unlock Premium',
         description: 'Access personalized coaching and exclusive content',
         button: 'Upgrade Now'
       },
-      signOut: 'Sign Out'
+      closeSidebar: 'Close sidebar'
     },
     id: {
       dashboard: 'Dasbor',
-      physicalGoals: 'Tujuan Fisik',
-      mindset: 'Pola Pikir',
-      habits: 'Kebiasaan',
-      communities: 'Komunitas',
-      profile: 'Profil',
-      settings: 'Pengaturan',
-      freePlan: 'Paket Gratis',
+      physicalGoals: {
+        title: 'Pertumbuhan Fisik',
+        body: 'Transformasi Tubuh',
+        nutrition: 'Nutrisi & Diet',
+        workout: 'Rencana Latihan',
+        skincare: 'Rutinitas Perawatan Kulit'
+      },
+      mindset: {
+        title: 'Pertumbuhan Mental',
+        goals: 'Penetapan Tujuan',
+        motivation: 'Pusat Motivasi',
+        reflection: 'Jurnal Refleksi'
+      },
+      habits: {
+        title: 'Pembangunan Kebiasaan',
+        tracker: 'Pelacak Kebiasaan',
+        streaks: 'Analisis Rangkaian',
+        challenges: 'Tantangan'
+      },
+      social: {
+        title: 'Pertumbuhan Sosial',
+        communities: 'Komunitas',
+        partners: 'Rekan Akuntabilitas',
+        events: 'Acara Langsung'
+      },
       premium: {
         title: 'Buka Premium',
         description: 'Akses pelatihan personal dan konten eksklusif',
         button: 'Tingkatkan Sekarang'
       },
-      signOut: 'Keluar'
+      closeSidebar: 'Tutup sidebar'
     }
   }[language] || {
-    en: {
-      dashboard: 'Dashboard',
-      physicalGoals: 'Physical Goals',
-      mindset: 'Mindset',
-      habits: 'Habits',
+    // Default to English
+    dashboard: 'Dashboard',
+    physicalGoals: {
+      title: 'Physical Growth',
+      body: 'Body Transformation',
+      nutrition: 'Nutrition & Diet',
+      workout: 'Workout Plans',
+      skincare: 'Skincare Routine'
+    },
+    mindset: {
+      title: 'Mental Growth',
+      goals: 'Goal Setting',
+      motivation: 'Motivation Center',
+      reflection: 'Reflection Journal'
+    },
+    habits: {
+      title: 'Habit Building',
+      tracker: 'Habit Tracker',
+      streaks: 'Streak Analytics',
+      challenges: 'Challenges'
+    },
+    social: {
+      title: 'Social Growth',
       communities: 'Communities',
-      profile: 'Profile',
-      settings: 'Settings',
-      freePlan: 'Free Plan',
-      premium: {
-        title: 'Unlock Premium',
-        description: 'Access personalized coaching and exclusive content',
-        button: 'Upgrade Now'
-      },
-      signOut: 'Sign Out'
-    }
+      partners: 'Accountability Partners',
+      events: 'Live Events'
+    },
+    premium: {
+      title: 'Unlock Premium',
+      description: 'Access personalized coaching and exclusive content',
+      button: 'Upgrade Now'
+    },
+    closeSidebar: 'Close sidebar'
   };
   
-  // Menu structure with grouping
+  // Menu structure with grouping and Material Symbols icons
   const menuGroups = [
     {
       id: 'main',
@@ -76,84 +129,103 @@ export default function Sidebar({ isOpen, onClose }) {
         { 
           name: t.dashboard, 
           path: '/dashboard', 
-          icon: (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-            </svg>
-          )
+          icon: 'dashboard',
+          animation: "dashboard"
         }
       ]
     },
     {
-      id: 'growth',
-      title: 'Growth Areas',
+      id: 'physical',
+      title: t.physicalGoals.title,
+      icon: 'monitoring',
       items: [
         { 
-          name: t.physicalGoals, 
-          path: '/physical', 
-          icon: (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z" />
-            </svg>
-          )
+          name: t.physicalGoals.body, 
+          path: '/physical/body', 
+          icon: 'fitness_center'
         },
         { 
-          name: t.mindset, 
-          path: '/mindset', 
-          icon: (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-              <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-            </svg>
-          )
+          name: t.physicalGoals.nutrition, 
+          path: '/physical/nutrition', 
+          icon: 'restaurant',
+          animation: "nutrition"
         },
         { 
-          name: t.habits, 
-          path: '/habits', 
-          icon: (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-            </svg>
-          )
+          name: t.physicalGoals.workout, 
+          path: '/physical/workout', 
+          icon: 'directions_run',
+          animation: "workout"
+        },
+        { 
+          name: t.physicalGoals.skincare, 
+          path: '/physical/skincare', 
+          icon: 'face'
+        }
+      ]
+    },
+    {
+      id: 'mental',
+      title: t.mindset.title,
+      icon: 'psychology',
+      items: [
+        { 
+          name: t.mindset.goals, 
+          path: '/mental/goals', 
+          icon: 'track_changes'
+        },
+        { 
+          name: t.mindset.motivation, 
+          path: '/mental/motivation', 
+          icon: 'emoji_objects'
+        },
+        { 
+          name: t.mindset.reflection, 
+          path: '/mental/reflection', 
+          icon: 'self_improvement'
+        }
+      ]
+    },
+    {
+      id: 'habits',
+      title: t.habits.title,
+      icon: 'calendar_month',
+      items: [
+        { 
+          name: t.habits.tracker, 
+          path: '/habits/tracker', 
+          icon: 'checklist'
+        },
+        { 
+          name: t.habits.streaks, 
+          path: '/habits/streaks', 
+          icon: 'trending_up'
+        },
+        { 
+          name: t.habits.challenges, 
+          path: '/habits/challenges', 
+          icon: 'military_tech'
         }
       ]
     },
     {
       id: 'social',
-      title: 'Social',
+      title: t.social.title,
+      icon: 'groups',
       items: [
         { 
-          name: t.communities, 
-          path: '/communities', 
-          icon: (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
-            </svg>
-          )
-        }
-      ]
-    },
-    {
-      id: 'user',
-      title: 'User',
-      items: [
-        { 
-          name: t.profile, 
-          path: '/profile', 
-          icon: (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-            </svg>
-          )
+          name: t.social.communities, 
+          path: '/social/communities', 
+          icon: 'diversity_3'
         },
         { 
-          name: t.settings, 
-          path: '/settings', 
-          icon: (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-            </svg>
-          )
+          name: t.social.partners, 
+          path: '/social/partners', 
+          icon: 'handshake'
+        },
+        { 
+          name: t.social.events, 
+          path: '/social/events', 
+          icon: 'event'
         }
       ]
     }
@@ -186,16 +258,6 @@ export default function Sidebar({ isOpen, onClose }) {
   // Toggle group expansion
   const toggleGroup = (groupId) => {
     setActiveGroup(activeGroup === groupId ? null : groupId);
-  };
-  
-  // Handle sign out
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      navigate('/');
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
   };
 
   // Sidebar animation variants
@@ -237,6 +299,9 @@ export default function Sidebar({ isOpen, onClose }) {
 
   return (
     <>
+      {/* Include Google Material Symbols in the head */}
+      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+      
       {/* Overlay for mobile - only appears when sidebar is open */}
       <AnimatePresence>
         {isOpen && window.innerWidth < 1024 && (
@@ -262,7 +327,7 @@ export default function Sidebar({ isOpen, onClose }) {
         animate={isOpen || window.innerWidth >= 1024 ? "open" : "closed"}
       >
         {/* Logo area */}
-        <div className={`h-16 flex items-center justify-center ${isDarkMode ? 'border-gray-800' : 'border-primary-100'} border-b relative`}>
+        <div className={`h-16 flex items-center justify-between ${isDarkMode ? 'border-gray-800' : 'border-primary-100'} border-b relative px-4`}>
           <Link to="/dashboard" className="flex items-center">
             <div 
               className="font-heading font-bold text-2xl transition-all duration-300 hover:scale-105"
@@ -277,19 +342,17 @@ export default function Sidebar({ isOpen, onClose }) {
             </div>
           </Link>
           
-          {/* Close button - only visible on mobile */}
+          {/* Close button */}
           <button 
             onClick={onClose}
-            className={`absolute right-4 top-3 lg:hidden ${
+            className={`${
               isDarkMode 
                 ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-800' 
                 : 'text-text-muted hover:text-text-dark hover:bg-gray-100'
-            } p-1 rounded-md transition-colors`}
-            aria-label="Close sidebar"
+            } p-2 rounded-md transition-colors`}
+            aria-label={t.closeSidebar}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <span className="material-symbols-rounded">close</span>
           </button>
         </div>
         
@@ -305,20 +368,23 @@ export default function Sidebar({ isOpen, onClose }) {
                       ? 'text-gray-400 hover:text-gray-300 hover:bg-gray-800/50' 
                       : 'text-neutral-500 hover:text-neutral-700 hover:bg-gray-100/50'
                   }`}
+                  onMouseEnter={() => setHoveredItem(`group-${group.id}`)}
+                  onMouseLeave={() => setHoveredItem(null)}
                 >
-                  <span>{group.title}</span>
+                  <span className="flex items-center">
+                    {group.icon && (
+                      <span className="material-symbols-rounded mr-2 text-lg">{group.icon}</span>
+                    )}
+                    {group.title}
+                  </span>
                   {group.items.length > 1 && (
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      className={`h-4 w-4 transition-transform duration-200 ${
-                        activeGroup === group.id ? 'transform rotate-180' : ''
-                      }`} 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
-                      stroke="currentColor"
+                    <motion.span
+                      className="material-symbols-rounded text-lg"
+                      animate={{ rotate: activeGroup === group.id ? 180 : 0 }}
+                      transition={{ duration: 0.2 }}
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+                      expand_more
+                    </motion.span>
                   )}
                 </button>
               )}
@@ -341,13 +407,17 @@ export default function Sidebar({ isOpen, onClose }) {
                         transition: { duration: 0.2 }
                       }
                     }}
+                    className="overflow-hidden"
                   >
-                    <ul className="space-y-1">
+                    <ul className="space-y-1 pl-3">
                       {group.items.map((item) => {
                         const isActive = location.pathname === item.path;
+                        const itemId = `menu-item-${item.path.replace(/\//g, '-')}`;
+                        
                         return (
                           <motion.li key={item.path} variants={itemVariants}>
                             <Link
+                              id={itemId}
                               to={item.path}
                               className={`group flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                                 isActive
@@ -359,8 +429,10 @@ export default function Sidebar({ isOpen, onClose }) {
                                     : 'text-text hover:bg-secondary-50/70'
                               }`}
                               aria-current={isActive ? 'page' : undefined}
+                              onMouseEnter={() => setHoveredItem(item.path)}
+                              onMouseLeave={() => setHoveredItem(null)}
                             >
-                              <span className={`mr-3 ${
+                              <span className={`mr-3 flex-shrink-0 ${
                                 isActive 
                                   ? isDarkMode
                                     ? 'text-primary-400'
@@ -369,12 +441,29 @@ export default function Sidebar({ isOpen, onClose }) {
                                     ? 'text-gray-500 group-hover:text-gray-400'
                                     : 'text-text-muted group-hover:text-primary-400'
                               }`}>
-                                {item.icon}
+                                <span className="material-symbols-rounded">{item.icon}</span>
                               </span>
-                              {item.name}
+                              
+                              <span className="flex-1">{item.name}</span>
                               
                               {isActive && (
                                 <span className={`ml-auto w-1.5 h-6 rounded-full ${isDarkMode ? 'bg-primary-400' : 'bg-primary-500'}`}></span>
+                              )}
+                              
+                              {/* Animated decoration for hovered items */}
+                              {hoveredItem === item.path && !isActive && (
+                                <motion.span 
+                                  className="absolute inset-0 rounded-lg z-0"
+                                  initial={{ opacity: 0, scale: 0.9 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  exit={{ opacity: 0, scale: 0.9 }}
+                                  transition={{ duration: 0.1 }}
+                                  style={{
+                                    background: isDarkMode 
+                                      ? 'linear-gradient(270deg, rgba(49, 151, 149, 0.1), transparent)'
+                                      : 'linear-gradient(270deg, rgba(49, 151, 149, 0.05), transparent)'
+                                  }}
+                                />
                               )}
                             </Link>
                           </motion.li>
@@ -387,82 +476,81 @@ export default function Sidebar({ isOpen, onClose }) {
             </div>
           ))}
           
-          {/* Premium upgrade card */}
+          {/* Premium upgrade card with gradient effect */}
           <motion.div 
-            className="mt-6 mx-1 mb-3"
+            className="mt-6 mx-1 mb-3 relative overflow-hidden"
             variants={itemVariants}
           >
-            <div className={`rounded-xl p-5 ${isDarkMode ? 'text-gray-200' : 'text-white'} shadow-md relative overflow-hidden`}>
-              {/* Background gradient with subtle animation */}
+            <div className="rounded-xl">
               <div 
-                className="absolute inset-0 z-0 bg-gradient-to-br transition-all duration-1000 ease-in-out animate-gradient-slow"
-                style={{ 
-                  backgroundImage: isDarkMode
-                    ? 'linear-gradient(135deg, #2C7A7B, #2B6CB0, #2F855A, #2C7A7B)'
-                    : 'linear-gradient(135deg, #319795, #3182CE, #38A169, #319795)',
-                  backgroundSize: '300% 300%',
-                }}
-              ></div>
-              
-              <div className="relative z-10">
-                <h3 className="font-bold text-lg mb-2">{t.premium.title}</h3>
-                <p className="text-sm opacity-90 mb-4">{t.premium.description}</p>
-                <button 
-                  className={`w-full ${
-                    isDarkMode 
-                      ? 'bg-gray-800 text-white hover:bg-gray-700' 
-                      : 'bg-white hover:bg-opacity-90'
-                  } font-semibold py-2 px-3 rounded-lg text-sm transition-all hover:shadow-lg transform hover:-translate-y-0.5`}
-                  style={{ color: isDarkMode ? '#fff' : '#319795' }}
-                >
-                  {t.premium.button}
-                </button>
+                className={`rounded-xl p-5 ${isDarkMode ? 'text-gray-200' : 'text-white'} shadow-md relative overflow-hidden`}
+                onMouseEnter={() => setAnimateButtonHover(true)}
+                onMouseLeave={() => setAnimateButtonHover(false)}
+              >
+                {/* Background gradient with subtle animation */}
+                <div 
+                  className="absolute inset-0 z-0 bg-gradient-to-br transition-all duration-1000 ease-in-out"
+                  style={{ 
+                    backgroundImage: isDarkMode
+                      ? 'linear-gradient(135deg, #2C7A7B, #2B6CB0, #2F855A, #2C7A7B)'
+                      : 'linear-gradient(135deg, #319795, #3182CE, #38A169, #319795)',
+                    backgroundSize: '300% 300%',
+                    animation: 'gradientAnimation 15s ease infinite'
+                  }}
+                ></div>
+                
+                <div className="relative z-10">
+                  <div className="flex items-center mb-2">
+                    <span className="material-symbols-rounded mr-2">diamond</span>
+                    <h3 className="font-bold text-lg">{t.premium.title}</h3>
+                  </div>
+                  <p className="text-sm opacity-90 mb-4">{t.premium.description}</p>
+                  
+                  <button 
+                    onMouseEnter={() => setAnimateButtonHover(true)}
+                    onMouseLeave={() => setAnimateButtonHover(false)}
+                    className={`w-full ${
+                      isDarkMode 
+                        ? 'bg-gray-800 text-white hover:bg-gray-700' 
+                        : 'bg-white hover:bg-opacity-90'
+                    } font-semibold py-2 px-3 rounded-lg text-sm transition-all transform hover:scale-105 flex items-center justify-center`}
+                    style={{ 
+                      color: isDarkMode ? '#fff' : '#319795'
+                    }}
+                  >
+                    <span className="material-symbols-rounded mr-1">workspace_premium</span>
+                    {t.premium.button}
+                  </button>
+                </div>
               </div>
             </div>
           </motion.div>
         </div>
-        
-        {/* User section at bottom */}
-        <div className={`absolute bottom-0 left-0 right-0 p-4 border-t ${isDarkMode ? 'border-gray-800 bg-gray-900' : 'border-primary-100 bg-content'}`}>
-          <div className="flex items-center">
-            <div 
-              className="h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold shadow-md"
-              style={{ 
-                background: 'linear-gradient(135deg, #319795, #3182CE)',
-                boxShadow: isDarkMode
-                  ? '0 0 10px rgba(49, 151, 149, 0.3)'
-                  : '0 0 15px rgba(49, 151, 149, 0.2)'
-              }}
-            >
-              AJ
-            </div>
-            <div className="ml-3 flex-grow">
-              <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-text-dark'}`}>
-                Alex Johnson
-              </p>
-              <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-text-muted'}`}>
-                {t.freePlan}
-              </p>
-            </div>
-            
-            {/* Sign out button */}
-            <button 
-              onClick={handleSignOut}
-              className={`ml-auto p-1.5 rounded-md ${
-                isDarkMode 
-                  ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-800' 
-                  : 'text-text-muted hover:text-text hover:bg-gray-100'
-              } transition-colors`}
-              aria-label={t.signOut}
-              title={t.signOut}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-            </button>
-          </div>
-        </div>
       </motion.aside>
+
+      {/* Add global style for gradient animation */}
+      <style jsx global>{`
+        @keyframes gradientAnimation {
+          0% { background-position: 0% 50% }
+          50% { background-position: 100% 50% }
+          100% { background-position: 0% 50% }
+        }
+        
+        /* Customize Material Symbols */
+        .material-symbols-rounded {
+          font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24;
+          font-size: 1.15rem;
+          line-height: 1;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          vertical-align: middle;
+        }
+      `}</style>
     </>
   );
 }
