@@ -1,18 +1,36 @@
 // src/App.jsx
+import { lazy, Suspense } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { DarkModeProvider } from './contexts/DarkModeContext';
 import MainLayout from './components/layout/MainLayout';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import Profile from './pages/Profile';
-import NotFound from './pages/NotFound';
 import ProtectedRoute from './route/ProtectedRoute';
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
+
+// Eager load auth-related pages for better UX
+import Login from './pages/Login';
+import Register from './pages/Register';
+import CompleteProfile from './pages/CompleteProfile';
+import ForgotPassword from './pages/ForgotPassword';
+import EmailVerification from './pages/EmailVerification';
+
+// Lazy load other pages
+const Home = lazy(() => import('./pages/Home'));
+const Features = lazy(() => import('./pages/Features'));
+const Pricing = lazy(() => import('./pages/Pricing'));
+const Blog = lazy(() => import('./pages/Blog'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Profile = lazy(() => import('./pages/Profile'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="flex justify-center items-center min-h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary-500"></div>
+  </div>
+);
 
 function App() {
   const location = useLocation();
@@ -58,6 +76,7 @@ function App() {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  // Determine if we're on a dashboard route
   const isDashboardRoute = location.pathname.startsWith('/dashboard') || 
                            location.pathname.startsWith('/profile') || 
                            location.pathname.startsWith('/physical') || 
@@ -65,51 +84,92 @@ function App() {
                            location.pathname.startsWith('/habits') || 
                            location.pathname.startsWith('/communities');
   
+  // Determine if we're on an auth route
+  const isAuthRoute = location.pathname === '/login' || 
+                      location.pathname === '/register' ||
+                      location.pathname === '/complete-profile' ||
+                      location.pathname === '/forgot-password' ||
+                      location.pathname === '/email-verification';
+  
   // Wrap everything in our providers
   return (
     <DarkModeProvider>
       <LanguageProvider>
-        {/* Layout for halaman dashboard */}
-        {isDashboardRoute && (
-          <div className="app-container w-full h-screen flex overflow-hidden">
-            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <Navbar onMenuClick={toggleSidebar} isLoggedIn={true} />
-              <div className="flex-1 overflow-auto bg-neutral-50 dark:bg-gray-900 p-0">
-                <Routes>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/physical" element={<div className="p-6 dark:text-gray-200">Physical Goals Content</div>} />
-                  <Route path="/mindset" element={<div className="p-6 dark:text-gray-200">Mindset Content</div>} />
-                  <Route path="/habits" element={<div className="p-6 dark:text-gray-200">Habits Content</div>} />
-                  <Route path="/communities" element={<div className="p-6 dark:text-gray-200">Communities Content</div>} />
-                </Routes>
+        <Suspense fallback={<LoadingFallback />}>
+          {/* Dashboard layout */}
+          {isDashboardRoute && (
+            <div className="app-container w-full h-screen flex overflow-hidden">
+              <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <Navbar onMenuClick={toggleSidebar} isLoggedIn={true} />
+                <div className="flex-1 overflow-auto bg-neutral-50 dark:bg-gray-900 p-0">
+                  <Routes>
+                    <Route path="/dashboard" element={
+                      <ProtectedRoute>
+                        <Dashboard />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/profile" element={
+                      <ProtectedRoute>
+                        <Profile />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/physical" element={
+                      <ProtectedRoute>
+                        <div className="p-6 dark:text-gray-200">Physical Goals Content</div>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/mindset" element={
+                      <ProtectedRoute>
+                        <div className="p-6 dark:text-gray-200">Mindset Content</div>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/habits" element={
+                      <ProtectedRoute>
+                        <div className="p-6 dark:text-gray-200">Habits Content</div>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/communities" element={
+                      <ProtectedRoute>
+                        <div className="p-6 dark:text-gray-200">Communities Content</div>
+                      </ProtectedRoute>
+                    } />
+                  </Routes>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Layout untuk halaman auth (login/register) */}
-        {(location.pathname === '/login' || location.pathname === '/register') && (
-          <div className="app-container w-full">
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-            </Routes>
-          </div>
-        )}
-
-        {/* Layout default dengan MainLayout */}
-        {!isDashboardRoute && location.pathname !== '/login' && location.pathname !== '/register' && (
-          <div className="app-container w-full">
-            <MainLayout>
+          {/* Auth layout - no header/footer */}
+          {isAuthRoute && (
+            <div className="app-container w-full">
               <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="*" element={<NotFound />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/complete-profile" element={<CompleteProfile />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/email-verification" element={<EmailVerification />} />
               </Routes>
-            </MainLayout>
-          </div>
-        )}
+            </div>
+          )}
+
+          {/* Main layout with header/footer for public pages */}
+          {!isDashboardRoute && !isAuthRoute && (
+            <div className="app-container w-full">
+              <MainLayout>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/features" element={<Features />} />
+                  <Route path="/pricing" element={<Pricing />} />
+                  <Route path="/blog" element={<Blog />} />
+                  <Route path="/blog/:id" element={<Blog />} />
+                  <Route path="/blog/tag/:tag" element={<Blog />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </MainLayout>
+            </div>
+          )}
+        </Suspense>
       </LanguageProvider>
     </DarkModeProvider>
   );

@@ -1,7 +1,7 @@
 // src/components/route/ProtectedRoute.jsx
 import { useState, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { auth, checkProfileCompletion } from '../config/firebase';
+import { auth } from '../config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 export default function ProtectedRoute({ children }) {
@@ -16,7 +16,19 @@ export default function ProtectedRoute({ children }) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
+          // Create a function to check profile completion
+          const checkProfileCompletion = async (uid) => {
+            const response = await fetch(`/api/users/${uid}/profile-status`);
+            if (!response.ok) {
+              throw new Error('Failed to check profile status');
+            }
+            const data = await response.json();
+            return data.isComplete;
+          };
+          
+          // Use the function to check profile completion
           const isProfileComplete = await checkProfileCompletion(user.uid);
+          
           setAuthStatus({
             isAuthenticated: true,
             isProfileCompleted: isProfileComplete,
@@ -42,7 +54,7 @@ export default function ProtectedRoute({ children }) {
     return () => unsubscribe();
   }, []);
 
-  // Tampilkan loading jika masih memeriksa status
+  // Show loading state while checking auth status
   if (authStatus.isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -51,16 +63,16 @@ export default function ProtectedRoute({ children }) {
     );
   }
 
-  // Jika tidak terotentikasi, arahkan ke login
+  // Redirect to login if not authenticated
   if (!authStatus.isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Jika terotentikasi tapi profil belum lengkap, arahkan ke complete profile
+  // Redirect to complete profile if authenticated but profile not completed
   if (!authStatus.isProfileCompleted) {
     return <Navigate to="/complete-profile" state={{ from: location }} replace />;
   }
 
-  // Jika sudah lengkap, tampilkan children (halaman yang diminta)
+  // If authenticated and profile is complete, render the children
   return children;
 }
