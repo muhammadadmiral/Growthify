@@ -1,9 +1,12 @@
 // src/components/layout/Navbar.jsx
-import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useDarkMode } from '../../contexts/DarkModeContext';
+import { auth, db } from '../../config/firebase';
+import { signOut, onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import { MoonIcon, SunIcon, MenuIcon, XIcon, ChevronDownIcon } from 'lucide-react';
 
 // Simple translations object
@@ -18,7 +21,8 @@ const translations = {
     profile: 'Profile',
     settings: 'Settings',
     help: 'Help Center',
-    signOut: 'Sign Out'
+    signOut: 'Sign Out',
+    dashboard: 'Dashboard'
   },
   id: {
     features: 'Fitur',
@@ -30,20 +34,71 @@ const translations = {
     profile: 'Profil',
     settings: 'Pengaturan',
     help: 'Pusat Bantuan',
-    signOut: 'Keluar'
+    signOut: 'Keluar',
+    dashboard: 'Dasbor'
   }
 };
 
 export default function Navbar({ onMenuClick, isLoggedIn = false }) {
+  const [userData, setUserData] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAuthCheckComplete, setIsAuthCheckComplete] = useState(false);
+  const dropdownRef = useRef(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const { language, toggleLanguage } = useLanguage();
   const { isDarkMode, toggleDarkMode } = useDarkMode();
 
   // Get translations based on current language
   const t = translations[language] || translations.en;
+
+  // Check authentication status
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          // Fetch user data from Firestore
+          const userRef = doc(db, 'users', user.uid);
+          const userDoc = await getDoc(userRef);
+          
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            setUserData({
+              uid: user.uid,
+              name: userData.name || user.displayName || 'User',
+              email: user.email,
+              avatar: userData.profileImage || user.photoURL,
+              role: userData.role || 'user'
+            });
+          } else {
+            // Basic user info if Firestore data not available
+            setUserData({
+              uid: user.uid,
+              name: user.displayName || 'User',
+              email: user.email,
+              avatar: user.photoURL
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          // Basic user info if there's an error
+          setUserData({
+            uid: user.uid,
+            name: user.displayName || 'User',
+            email: user.email,
+            avatar: user.photoURL
+          });
+        }
+      } else {
+        setUserData(null);
+      }
+      setIsAuthCheckComplete(true);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Handle scroll effect
   useEffect(() => {
@@ -55,7 +110,7 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (isDropdownOpen && !event.target.closest('.user-dropdown')) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
       }
     };
@@ -79,6 +134,7 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
   : isScrolled 
     ? 'text-primary-600 hover:text-primary-700' 
     : 'text-primary-600 hover:text-primary-700'; 
+  
   // Logo background effect for dark/light mode  
   const logoBgEffect = isDarkMode 
     ? 'from-primary-700/20 via-secondary-700/20 to-primary-700/20'
@@ -89,6 +145,23 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
     ? 'bg-primary-900/30'
     : isScrolled ? 'bg-primary-50/70' : 'bg-white/20';
 
+  // Handle sign out
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      // Redirect to home page after signing out
+      navigate('/');
+    } catch (error) {
+      console.error("Error signing out: ", error);
+    }
+  };
+
+  // Get user initials for avatar
+  const getUserInitials = (name) => {
+    if (!name) return "U";
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
+
   // Nav links data
   const navLinks = [
     { name: t.features, path: '/features' },
@@ -96,6 +169,8 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
     { name: t.testimonials, path: '/testimonials' },
     { name: t.blog, path: '/blog' }
   ];
+
+  const isUserLoggedIn = !!userData;
 
   return (
     <nav 
@@ -116,7 +191,7 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
           {/* Left side with logo and menu button */}
           <div className="flex items-center space-x-4">
             {/* Dashboard menu button (only for logged in users) */}
-            {isLoggedIn && (
+            {isUserLoggedIn && (
               <motion.button
                 onClick={onMenuClick}
                 className={`lg:hidden relative p-2 rounded-lg text-primary-500 transition-all duration-300 hover:text-primary-400`}
@@ -132,7 +207,7 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
             )}
             
             {/* Mobile menu button (for non-logged in users) */}
-            {!isLoggedIn && (
+            {!isUserLoggedIn && (
               <motion.button 
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className={`md:hidden relative p-2 rounded-lg text-primary-500 transition-all duration-300 hover:text-primary-400`}
@@ -147,7 +222,7 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
               </motion.button>
             )}
             
-            {/* Logo with amazing effects */}
+            {/* Logo with animation effects */}
             <Link to="/" className="flex-shrink-0 group relative">
               <div className={`absolute -inset-4 rounded-2xl bg-gradient-to-r ${logoBgEffect} opacity-0 blur-xl group-hover:opacity-100 group-hover:duration-1000 duration-300 group-hover:animate-pulse-slow`}></div>
               <div className="relative flex items-center">
@@ -165,7 +240,7 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
           </div>
           
           {/* Navigation Links - Desktop */}
-          {!isLoggedIn && (
+          {isAuthCheckComplete && !isUserLoggedIn && (
             <div className="hidden md:flex md:items-center md:space-x-1">
               {navLinks.map((link, index) => {
                 const isActive = location.pathname === link.path;
@@ -202,6 +277,41 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
                   </Link>
                 );
               })}
+            </div>
+          )}
+          
+          {/* Dashboard Link for logged in users */}
+          {isAuthCheckComplete && isUserLoggedIn && (
+            <div className="hidden md:flex md:items-center md:space-x-1">
+              <Link 
+                to="/dashboard" 
+                className={`px-4 py-2 mx-1 rounded-lg text-sm font-medium relative overflow-hidden transition-all duration-300 ${
+                  location.pathname === '/dashboard' 
+                    ? isDarkMode ? 'text-primary-300' : 'text-primary-600' 
+                    : navLinkColor
+                }`}
+              >
+                {/* Dynamic highlight effect */}
+                <span className={`absolute inset-0 rounded-lg -z-10 transition-opacity duration-300 
+                  ${location.pathname === '/dashboard' ? activeNavBg : 'opacity-0'}`}
+                ></span>
+
+                {/* Hover highlight */}
+                <span className={`absolute inset-0 rounded-lg -z-10 opacity-0 hover:opacity-100 transition-opacity duration-300 ${
+                  isDarkMode ? 'bg-primary-900/50' : isScrolled ? 'bg-primary-50/70' : 'bg-white/20'
+                }`}></span>
+                
+                {/* Text with dot indicator for active state */}
+                <span className="relative flex items-center">
+                  {t.dashboard}
+                  {location.pathname === '/dashboard' && (
+                    <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 rounded-full bg-primary-500"></span>
+                  )}
+                </span>
+                
+                {/* Animated underline with gradient */}
+                <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary-500/0 via-primary-500 to-primary-500/0 transform scale-x-0 hover:scale-x-100 transition-transform duration-300 ease-out"></span>
+              </Link>
             </div>
           )}
           
@@ -251,18 +361,16 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
                   animate={{ rotate: 360 }}
                   transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
                 ></motion.div>
-                <img 
-                  src={`/flags/${language === 'en' ? 'us-flag.png' : 'idn-flag.png'}`}
-                  alt={language === 'en' ? 'English' : 'Bahasa Indonesia'}
-                  className="w-5 h-5 rounded-full object-cover ring-1 ring-primary-500/30 relative"
-                />
+                <span className="w-5 h-5 rounded-full flex items-center justify-center relative">
+                  {language === 'en' ? '🇺🇸' : '🇮🇩'}
+                </span>
               </div>
               <span className="text-sm font-medium">{language === 'en' ? 'EN' : 'ID'}</span>
             </motion.button>
 
             {/* User Menu for Logged In Users */}
-            {isLoggedIn ? (
-              <div className="relative user-dropdown">
+            {isAuthCheckComplete && isUserLoggedIn ? (
+              <div className="relative user-dropdown" ref={dropdownRef}>
                 <motion.button 
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="flex items-center space-x-2 rounded-lg p-1.5 relative overflow-hidden text-primary-500 hover:text-primary-400 transition-colors duration-300"
@@ -277,13 +385,21 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
                   {/* Avatar with premium effects */}
                   <div className="relative group">
                     <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-500 opacity-40 blur-sm group-hover:opacity-70 transition-opacity duration-300"></div>
-                    <div className="h-8 w-8 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br from-primary-500 to-secondary-500 shadow-md relative ring-2 ring-white/10 dark:ring-black/5">
-                      AJ
-                    </div>
+                    {userData.avatar ? (
+                      <img 
+                        src={userData.avatar} 
+                        alt={userData.name} 
+                        className="h-8 w-8 rounded-full object-cover shadow-md relative ring-2 ring-white/10 dark:ring-black/5"
+                      />
+                    ) : (
+                      <div className="h-8 w-8 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br from-primary-500 to-secondary-500 shadow-md relative ring-2 ring-white/10 dark:ring-black/5">
+                        {getUserInitials(userData.name)}
+                      </div>
+                    )}
                   </div>
                   
                   <div className="hidden sm:flex items-center text-primary-500 hover:text-primary-400">
-                    <span className="text-sm font-medium">Alex J</span>
+                    <span className="text-sm font-medium">{userData.name.split(' ')[0]}</span>
                     <ChevronDownIcon size={16} className="ml-1" />
                   </div>
                 </motion.button>
@@ -311,13 +427,21 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
                           {/* Avatar with premium effects */}
                           <div className="relative group">
                             <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-500 opacity-40 blur-sm"></div>
-                            <div className="h-10 w-10 rounded-full flex items-center justify-center text-white font-medium bg-gradient-to-br from-primary-500 to-secondary-500 shadow-md relative">
-                              AJ
-                            </div>
+                            {userData.avatar ? (
+                              <img 
+                                src={userData.avatar} 
+                                alt={userData.name} 
+                                className="h-10 w-10 rounded-full object-cover shadow-md relative ring-2 ring-white/10 dark:ring-black/5"
+                              />
+                            ) : (
+                              <div className="h-10 w-10 rounded-full flex items-center justify-center text-white font-medium bg-gradient-to-br from-primary-500 to-secondary-500 shadow-md relative ring-2 ring-white/10 dark:ring-black/5">
+                                {getUserInitials(userData.name)}
+                              </div>
+                            )}
                           </div>
                           <div>
-                            <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Alex Johnson</p>
-                            <p className="text-xs text-primary-500">Premium Member</p>
+                            <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{userData.name}</p>
+                            <p className="text-xs text-primary-500">{userData.role === 'admin' ? 'Admin' : 'Member'}</p>
                           </div>
                         </div>
                       </div>
@@ -355,11 +479,14 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
                       
                       {/* Sign Out Button with hover effect */}
                       <div className={`py-2 ${isDarkMode ? 'border-t border-gray-800' : 'border-t border-gray-100'}`}>
-                        <button className={`w-full text-left flex items-center px-4 py-2 text-sm ${
-                          isDarkMode 
-                            ? 'text-gray-300 hover:bg-primary-900/30 hover:text-primary-300' 
-                            : 'text-gray-700 hover:bg-primary-50/70 hover:text-primary-600'
-                        } transition-colors duration-200`}>
+                        <button 
+                          onClick={handleSignOut}
+                          className={`w-full text-left flex items-center px-4 py-2 text-sm ${
+                            isDarkMode 
+                              ? 'text-gray-300 hover:bg-primary-900/30 hover:text-primary-300' 
+                              : 'text-gray-700 hover:bg-primary-50/70 hover:text-primary-600'
+                          } transition-colors duration-200`}
+                        >
                           <svg className="h-4 w-4 mr-3 text-primary-500 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                           </svg>
@@ -370,7 +497,7 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
                   )}
                 </AnimatePresence>
               </div>
-            ) : (
+            ) : isAuthCheckComplete && (
               <>
                 {/* Login Button with hover effects */}
                 <Link 
@@ -412,7 +539,7 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
 
       {/* Mobile menu - Animated slide down with premium styling */}
       <AnimatePresence>
-        {!isLoggedIn && isMobileMenuOpen && (
+        {!isUserLoggedIn && isMobileMenuOpen && (
           <motion.div 
             className={`md:hidden ${
               isDarkMode 
@@ -453,20 +580,6 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
                 );
               })}
               
-              <Link 
-  to="/login" 
-  className={`hidden sm:flex items-center px-4 py-2 text-sm font-medium rounded-lg relative overflow-hidden ${
-    isDarkMode 
-      ? 'text-primary-400 hover:text-primary-300' 
-      : 'text-primary-600 hover:text-primary-700'
-  } transition-all duration-300`}
->
-  <span className={`absolute inset-0 rounded-lg opacity-0 hover:opacity-100 ${
-    isDarkMode ? 'bg-primary-900/50' : 'bg-primary-50/70'
-  } transition-opacity duration-300`}></span>
-  <span className="relative">{t.login}</span>
-</Link>
-              
               {/* CTA Button for Mobile */}
               <div className="p-2">
                 <Link 
@@ -488,7 +601,7 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
                       <span className="absolute -inset-[100%] top-0 block transform -skew-x-12 bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:animate-shine"></span>
                     </span>
                     <span className="relative">{t.getStarted}</span>
-                    </div>
+                  </div>
                 </Link>
               </div>
             </div>
