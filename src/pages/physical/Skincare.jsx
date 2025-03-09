@@ -26,6 +26,7 @@ import ProductDetailsModal from '../../components/skincare/ProductDetailsModal';
 
 // Import services
 import { skincareService } from '../../components/skincare/skincareService';
+
 export default function Skincare() {
   const { isDarkMode } = useDarkMode();
   const { language } = useLanguage();

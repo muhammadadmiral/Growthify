@@ -7,7 +7,7 @@ import {
   Apple, 
   HeartPulse, 
   Activity, 
-  Water, 
+  Droplet, // Replace Water with Droplet
   Clock, 
   Utensils, 
   ChevronDown, 
@@ -204,7 +204,7 @@ export default function Nutrition() {
         isDarkMode ? 'border-gray-700' : 'border-neutral-200'
       }`}>
         <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-neutral-800'}`}>
-          {t.nutritionGoals}
+          {t.nutritionGoals ? String(t.nutritionGoals) : 'Nutrition Goals'}
         </h2>
         <button 
           onClick={() => {
@@ -236,7 +236,8 @@ export default function Nutrition() {
             >
               <div className="flex justify-between items-center mb-3">
                 <h3 className={`font-medium ${isDarkMode ? 'text-white' : 'text-neutral-800'}`}>
-                  {label}
+                  {/* Make sure label is a string */}
+                  {typeof label === 'string' ? label : String(label)}
                 </h3>
                 <Utensils className={`w-5 h-5 ${isDarkMode ? 'text-gray-400' : 'text-neutral-600'}`} />
               </div>

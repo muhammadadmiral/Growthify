@@ -1,166 +1,98 @@
-export const skincareProductModckData = [
-{
-    name: 'Hydrating Serum Boost',
+// src/components/skincare/skincareProductMockData.js
+
+// This is creating mock data for skincare products to be used in the application
+// The data is exported as a default export, not a named export
+
+const skincareProductMockData = [
+  {
+    id: 'product1',
+    name: 'Hydrating Facial Cleanser',
+    brand: 'CeraVe',
+    category: 'Cleanser',
+    skinType: ['Normal', 'Dry', 'Sensitive'],
+    concerns: ['Dryness', 'Sensitivity'],
+    price: 14.99,
+    ingredients: ['Ceramides', 'Hyaluronic Acid', 'Glycerin'],
+    description: 'A gentle, hydrating cleanser that removes dirt and makeup without disrupting the skin barrier.',
+    imageUrl: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8M3x8ZmFjZSUyMGNsZWFuc2VyfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=800&q=60',
+    rating: 4.8,
+    reviews: 1245
+  },
+  {
+    id: 'product2',
+    name: 'Vitamin C Serum',
+    brand: 'Timeless',
+    category: 'Serum',
+    skinType: ['All', 'Combination', 'Oily'],
+    concerns: ['Dark Spots', 'Anti-aging', 'Dullness'],
+    price: 24.99,
+    ingredients: ['Vitamin C (20%)', 'Vitamin E', 'Ferulic Acid'],
+    description: 'A potent antioxidant serum that brightens skin, reduces dark spots, and protects against environmental damage.',
+    imageUrl: 'https://images.unsplash.com/photo-1615366105533-88abbf763bd6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Nnx8c2VydW18ZW58MHx8MHx8&auto=format&fit=crop&w=800&q=60',
+    rating: 4.6,
+    reviews: 957
+  },
+  {
+    id: 'product3',
+    name: 'Niacinamide 10% + Zinc 1%',
     brand: 'The Ordinary',
     category: 'Serum',
-    imageUrl: 'https://via.placeholder.com/400x400?text=Hydrating+Serum',
-    matchPercentage: 85,
-    price: 12.99,
-    volume: '30ml',
-    targetConcerns: [
-      'Hydration', 
-      'Skin Barrier', 
-      'Fine Lines'
-    ],
-    suitableSkinTypes: [
-      'Dry', 
-      'Combination', 
-      'Normal'
-    ],
-    ingredients: [
-      'Aqua (Water)',
-      'Glycerin',
-      'Hyaluronic Acid',
-      'Propanediol',
-      'Sodium Hyaluronate',
-      'Phenoxyethanol',
-      'Ethylhexylglycerin'
-    ],
-    keyIngredients: [
-      {
-        name: 'Hyaluronic Acid',
-        scientificName: 'Sodium Hyaluronate',
-        concentration: '2%',
-        benefits: [
-          'Intense hydration',
-          'Plumps skin',
-          'Reduces fine lines'
-        ]
-      },
-      {
-        name: 'Glycerin',
-        scientificName: 'Glycerol',
-        concentration: '5%',
-        benefits: [
-          'Moisturizes',
-          'Improves skin barrier',
-          'Prevents water loss'
-        ]
-      }
-    ],
-    scientificDetails: {
-      pH: '5.5-6.5',
-      molecularWeight: 'Low molecular weight',
-      absorption: 'Quick and lightweight'
-    },
-    usage: {
-      frequency: ['Morning', 'Evening'],
-      application: [
-        'Cleanse face',
-        'Apply 2-3 drops',
-        'Gently pat into skin',
-        'Follow with moisturizer'
-      ]
-    },
-    precautions: {
-      doNotUse: [
-        'Active acne breakouts',
-        'Open wounds',
-        'Known allergies to ingredients'
-      ],
-      warnings: [
-        'Patch test recommended',
-        'Avoid direct eye contact',
-        'Discontinue if irritation occurs'
-      ]
-    },
-    certificationsAndEthics: {
-      crueltyFree: true,
-      vegan: true,
-      organic: false,
-      sustainabilityRating: 4
-    }
-    },
-    {
-    id: 'prod2',
-    name: 'Oil Control Moisturizer',
-    brand: 'Neutrogena',
+    skinType: ['Combination', 'Oily', 'Acne-Prone'],
+    concerns: ['Acne', 'Pores', 'Oil Control'],
+    price: 5.90,
+    ingredients: ['Niacinamide', 'Zinc PCA', 'Glycerin'],
+    description: 'A high-strength vitamin and mineral formula that reduces the appearance of blemishes and congestion.',
+    imageUrl: 'https://images.unsplash.com/photo-1620916297397-a4a5402a3c6c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fHNlcnVtfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=800&q=60',
+    rating: 4.7,
+    reviews: 1876
+  },
+  {
+    id: 'product4',
+    name: 'Moisturizing Cream',
+    brand: 'La Roche-Posay',
     category: 'Moisturizer',
-    imageUrl: 'https://via.placeholder.com/400x400?text=Oil+Control+Moisturizer',
-    matchPercentage: 90,
-    price: 15.99,
-    volume: '50ml',
-    targetConcerns: [
-      'Oily Skin', 
-      'Acne Control', 
-      'Mattifying'
-    ],
-    suitableSkinTypes: [
-      'Oily', 
-      'Combination'
-    ],
-    ingredients: [
-      'Water',
-      'Glycerin',
-      'Dimethicone',
-      'Niacinamide',
-      'Salicylic Acid',
-      'Zinc PCA',
-      'Alcohol Denat.'
-    ],
-    keyIngredients: [
-      {
-        name: 'Niacinamide',
-        scientificName: 'Vitamin B3',
-        concentration: '4%',
-        benefits: [
-          'Reduces oil production',
-          'Minimizes pores',
-          'Improves skin texture'
-        ]
-      },
-      {
-        name: 'Salicylic Acid',
-        scientificName: 'Beta Hydroxy Acid (BHA)',
-        concentration: '2%',
-        benefits: [
-          'Unclogs pores',
-          'Fights acne',
-          'Exfoliates skin'
-        ]
-      }
-    ],
-    scientificDetails: {
-      pH: '5.0-5.5',
-      oilAbsorption: 'High',
-      mattifyingEffect: 'Immediate'
-    },
-    usage: {
-      frequency: ['Morning', 'Evening'],
-      application: [
-        'Cleanse face',
-        'Apply thin layer',
-        'Gently massage',
-        'Use as last step of skincare'
-      ]
-    },
-    precautions: {
-      doNotUse: [
-        'Extremely dry skin',
-        'Sensitive or reactive skin',
-        'Open wounds or severe acne'
-      ],
-      warnings: [
-        'May cause initial dryness',
-        'Use sunscreen during day',
-        'Gradually introduce to skin'
-      ]
-    },
-    certificationsAndEthics: {
-      crueltyFree: false,
-      vegan: false,
-      organic: false,
-      sustainabilityRating: 2
-    }
-}    
+    skinType: ['Dry', 'Very Dry', 'Sensitive'],
+    concerns: ['Dryness', 'Irritation', 'Redness'],
+    price: 19.99,
+    ingredients: ['Thermal Spring Water', 'Ceramide-3', 'Niacinamide'],
+    // Fixed: Escaped the apostrophe with a backslash
+    description: 'A daily face and body moisturizer that provides up to 48-hour hydration and helps restore the skin\'s protective barrier.',
+    imageUrl: 'https://images.unsplash.com/photo-1617993069821-d59e436e0bef?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTV8fG1vaXN0dXJpemVyfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=800&q=60',
+    rating: 4.9,
+    reviews: 2043
+  },
+  {
+    id: 'product5',
+    name: 'Chemical Exfoliant',
+    brand: 'Paula\'s Choice', // This apostrophe is already escaped correctly
+    category: 'Exfoliant',
+    skinType: ['All', 'Combination', 'Oily'],
+    concerns: ['Texture', 'Blackheads', 'Acne'],
+    price: 29.50,
+    ingredients: ['2% BHA (Salicylic Acid)', 'Green Tea Extract', 'Methylpropanediol'],
+    description: 'A leave-on exfoliant that removes built-up dead skin cells and unclogs pores for clearer, smoother skin.',
+    imageUrl: 'https://images.unsplash.com/photo-1572006234483-4c66f176f511?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTB8fHNraW5jYXJlJTIwcHJvZHVjdHxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=800&q=60',
+    rating: 4.5,
+    reviews: 1532
+  },
+  {
+    id: 'product6',
+    name: 'Mineral Sunscreen SPF 50',
+    brand: 'EltaMD',
+    category: 'Sunscreen',
+    skinType: ['All', 'Sensitive', 'Acne-Prone'],
+    concerns: ['Sun Protection', 'Anti-aging', 'Acne'],
+    price: 36.00,
+    ingredients: ['Zinc Oxide', 'Titanium Dioxide', 'Niacinamide'],
+    description: 'A lightweight, oil-free face sunscreen that helps calm and protect sensitive skin types prone to acne, rosacea and discoloration.',
+    imageUrl: 'https://images.unsplash.com/photo-1521634663641-61223afcb268?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8c3Vuc2NyZWVufGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=800&q=60',
+    rating: 4.7,
+    reviews: 1876
+  }
 ];
+
+// Fix: Export the data as default
+export default skincareProductMockData;
+
+// You can also add a named export if needed
+export { skincareProductMockData };

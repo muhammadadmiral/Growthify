@@ -121,7 +121,7 @@ export default function Sidebar({ isOpen, onClose }) {
     closeSidebar: 'Close sidebar'
   };
   
-  // Menu structure with grouping and Material Symbols icons
+  // Menu structure with updated paths to match App.jsx routes
   const menuGroups = [
     {
       id: 'main',
@@ -141,7 +141,7 @@ export default function Sidebar({ isOpen, onClose }) {
       items: [
         { 
           name: t.physicalGoals.body, 
-          path: '/physical/body', 
+          path: '/physical/body-transformation', 
           icon: 'fitness_center'
         },
         { 
@@ -152,7 +152,7 @@ export default function Sidebar({ isOpen, onClose }) {
         },
         { 
           name: t.physicalGoals.workout, 
-          path: '/physical/workout', 
+          path: '/physical/workout-planner', 
           icon: 'directions_run',
           animation: "workout"
         },
@@ -170,7 +170,7 @@ export default function Sidebar({ isOpen, onClose }) {
       items: [
         { 
           name: t.mindset.goals, 
-          path: '/mental/goals', 
+          path: '/mental/goal-setting', 
           icon: 'track_changes'
         },
         { 
@@ -231,6 +231,34 @@ export default function Sidebar({ isOpen, onClose }) {
     }
   ];
 
+  // Set initial active group based on current path
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.startsWith('/physical')) {
+      setActiveGroup('physical');
+    } else if (path.startsWith('/mental')) {
+      setActiveGroup('mental');
+    } else if (path.startsWith('/habits')) {
+      setActiveGroup('habits');
+    } else if (path.startsWith('/social')) {
+      setActiveGroup('social');
+    }
+  }, []);
+
+  // Update active group when path changes
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.startsWith('/physical')) {
+      setActiveGroup('physical');
+    } else if (path.startsWith('/mental')) {
+      setActiveGroup('mental');
+    } else if (path.startsWith('/habits')) {
+      setActiveGroup('habits');
+    } else if (path.startsWith('/social')) {
+      setActiveGroup('social');
+    }
+  }, [location.pathname]);
+
   // Close sidebar when route changes on mobile screens
   useEffect(() => {
     if (isOpen && window.innerWidth < 1024) {
@@ -258,6 +286,14 @@ export default function Sidebar({ isOpen, onClose }) {
   // Toggle group expansion
   const toggleGroup = (groupId) => {
     setActiveGroup(activeGroup === groupId ? null : groupId);
+  };
+
+  // Handle navigation with improved mobile support
+  const handleNavigation = (path) => {
+    navigate(path);
+    if (window.innerWidth < 1024) {
+      onClose();
+    }
   };
 
   // Sidebar animation variants
@@ -297,6 +333,22 @@ export default function Sidebar({ isOpen, onClose }) {
     }
   };
 
+  // Check if a link is active
+  const isLinkActive = (path) => {
+    // Check if current path exactly matches the link path
+    if (location.pathname === path) return true;
+    
+    // For sub-pages of workout, allow highlight on parent menu
+    if (path === '/physical/workout-planner' && 
+        (location.pathname === '/physical/workout-progress' || 
+         location.pathname === '/physical/workout-history' || 
+         location.pathname === '/physical/workout-statistics')) {
+      return true;
+    }
+    
+    return false;
+  };
+
   return (
     <>
       {/* Include Google Material Symbols in the head */}
@@ -306,7 +358,7 @@ export default function Sidebar({ isOpen, onClose }) {
       <AnimatePresence>
         {isOpen && window.innerWidth < 1024 && (
           <motion.div 
-            className={`fixed inset-0 ${isDarkMode ? 'bg-black bg-opacity-50' : 'bg-secondary-900 bg-opacity-30'} backdrop-blur-sm z-20 lg:hidden`}
+            className={`fixed inset-0 ${isDarkMode ? 'bg-black bg-opacity-50' : 'bg-black bg-opacity-30'} backdrop-blur-sm z-20 lg:hidden`}
             onClick={onClose}
             aria-hidden="true"
             initial={{ opacity: 0 }}
@@ -320,14 +372,14 @@ export default function Sidebar({ isOpen, onClose }) {
       {/* Sidebar */}
       <motion.aside 
         ref={sidebarRef}
-        className={`fixed top-0 left-0 h-full ${isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-content border-primary-100'} z-30 shadow-elegant w-72 lg:w-64 lg:static lg:z-0 border-r overflow-hidden`}
+        className={`fixed top-0 left-0 h-full ${isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} z-30 shadow-xl w-72 lg:w-64 lg:static lg:z-0 border-r overflow-hidden`}
         aria-label="Sidebar"
         variants={sidebarVariants}
         initial={false}
         animate={isOpen || window.innerWidth >= 1024 ? "open" : "closed"}
       >
         {/* Logo area */}
-        <div className={`h-16 flex items-center justify-between ${isDarkMode ? 'border-gray-800' : 'border-primary-100'} border-b relative px-4`}>
+        <div className={`h-16 flex items-center justify-between ${isDarkMode ? 'border-gray-800' : 'border-gray-200'} border-b relative px-4`}>
           <Link to="/dashboard" className="flex items-center">
             <div 
               className="font-heading font-bold text-2xl transition-all duration-300 hover:scale-105"
@@ -342,13 +394,13 @@ export default function Sidebar({ isOpen, onClose }) {
             </div>
           </Link>
           
-          {/* Close button */}
+          {/* Close button - only visible on mobile */}
           <button 
             onClick={onClose}
-            className={`${
+            className={`lg:hidden ${
               isDarkMode 
                 ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-800' 
-                : 'text-text-muted hover:text-text-dark hover:bg-gray-100'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
             } p-2 rounded-md transition-colors`}
             aria-label={t.closeSidebar}
           >
@@ -366,7 +418,7 @@ export default function Sidebar({ isOpen, onClose }) {
                   className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wider rounded-md mb-1 ${
                     isDarkMode 
                       ? 'text-gray-400 hover:text-gray-300 hover:bg-gray-800/50' 
-                      : 'text-neutral-500 hover:text-neutral-700 hover:bg-gray-100/50'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/50'
                   }`}
                   onMouseEnter={() => setHoveredItem(`group-${group.id}`)}
                   onMouseLeave={() => setHoveredItem(null)}
@@ -411,22 +463,22 @@ export default function Sidebar({ isOpen, onClose }) {
                   >
                     <ul className="space-y-1 pl-3">
                       {group.items.map((item) => {
-                        const isActive = location.pathname === item.path;
+                        const isActive = isLinkActive(item.path);
                         const itemId = `menu-item-${item.path.replace(/\//g, '-')}`;
                         
                         return (
                           <motion.li key={item.path} variants={itemVariants}>
-                            <Link
+                            <button
                               id={itemId}
-                              to={item.path}
-                              className={`group flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                              onClick={() => handleNavigation(item.path)}
+                              className={`group w-full flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                                 isActive
                                   ? isDarkMode 
                                     ? 'bg-primary-900/30 text-primary-400'
                                     : 'bg-primary-50 text-primary-600'
                                   : isDarkMode
                                     ? 'text-gray-300 hover:bg-gray-800/70'
-                                    : 'text-text hover:bg-secondary-50/70'
+                                    : 'text-gray-700 hover:bg-gray-100/70'
                               }`}
                               aria-current={isActive ? 'page' : undefined}
                               onMouseEnter={() => setHoveredItem(item.path)}
@@ -439,12 +491,12 @@ export default function Sidebar({ isOpen, onClose }) {
                                     : 'text-primary-500' 
                                   : isDarkMode
                                     ? 'text-gray-500 group-hover:text-gray-400'
-                                    : 'text-text-muted group-hover:text-primary-400'
+                                    : 'text-gray-500 group-hover:text-primary-400'
                               }`}>
                                 <span className="material-symbols-rounded">{item.icon}</span>
                               </span>
                               
-                              <span className="flex-1">{item.name}</span>
+                              <span className="flex-1 text-left">{item.name}</span>
                               
                               {isActive && (
                                 <span className={`ml-auto w-1.5 h-6 rounded-full ${isDarkMode ? 'bg-primary-400' : 'bg-primary-500'}`}></span>
@@ -465,7 +517,7 @@ export default function Sidebar({ isOpen, onClose }) {
                                   }}
                                 />
                               )}
-                            </Link>
+                            </button>
                           </motion.li>
                         );
                       })}
@@ -486,71 +538,72 @@ export default function Sidebar({ isOpen, onClose }) {
                 className={`rounded-xl p-5 ${isDarkMode ? 'text-gray-200' : 'text-white'} shadow-md relative overflow-hidden`}
                 onMouseEnter={() => setAnimateButtonHover(true)}
                 onMouseLeave={() => setAnimateButtonHover(false)}
+                // src/components/layout/Sidebar.jsx (continued)
               >
-                {/* Background gradient with subtle animation */}
-                <div 
-                  className="absolute inset-0 z-0 bg-gradient-to-br transition-all duration-1000 ease-in-out"
-                  style={{ 
-                    backgroundImage: isDarkMode
-                      ? 'linear-gradient(135deg, #2C7A7B, #2B6CB0, #2F855A, #2C7A7B)'
-                      : 'linear-gradient(135deg, #319795, #3182CE, #38A169, #319795)',
-                    backgroundSize: '300% 300%',
-                    animation: 'gradientAnimation 15s ease infinite'
-                  }}
-                ></div>
-                
-                <div className="relative z-10">
-                  <div className="flex items-center mb-2">
-                    <span className="material-symbols-rounded mr-2">diamond</span>
-                    <h3 className="font-bold text-lg">{t.premium.title}</h3>
-                  </div>
-                  <p className="text-sm opacity-90 mb-4">{t.premium.description}</p>
-                  
-                  <button 
-                    onMouseEnter={() => setAnimateButtonHover(true)}
-                    onMouseLeave={() => setAnimateButtonHover(false)}
-                    className={`w-full ${
-                      isDarkMode 
-                        ? 'bg-gray-800 text-white hover:bg-gray-700' 
-                        : 'bg-white hover:bg-opacity-90'
-                    } font-semibold py-2 px-3 rounded-lg text-sm transition-all transform hover:scale-105 flex items-center justify-center`}
-                    style={{ 
-                      color: isDarkMode ? '#fff' : '#319795'
-                    }}
-                  >
-                    <span className="material-symbols-rounded mr-1">workspace_premium</span>
-                    {t.premium.button}
-                  </button>
+              {/* Background gradient with subtle animation */}
+              <div 
+                className="absolute inset-0 z-0 bg-gradient-to-br transition-all duration-1000 ease-in-out"
+                style={{ 
+                  backgroundImage: isDarkMode
+                    ? 'linear-gradient(135deg, #2C7A7B, #2B6CB0, #2F855A, #2C7A7B)'
+                    : 'linear-gradient(135deg, #319795, #3182CE, #38A169, #319795)',
+                  backgroundSize: '300% 300%',
+                  animation: 'gradientAnimation 15s ease infinite'
+                }}
+              ></div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center mb-2">
+                  <span className="material-symbols-rounded mr-2">diamond</span>
+                  <h3 className="font-bold text-lg">{t.premium.title}</h3>
                 </div>
+                <p className="text-sm opacity-90 mb-4">{t.premium.description}</p>
+                
+                <button 
+                  onMouseEnter={() => setAnimateButtonHover(true)}
+                  onMouseLeave={() => setAnimateButtonHover(false)}
+                  className={`w-full ${
+                    isDarkMode 
+                      ? 'bg-gray-800 text-white hover:bg-gray-700' 
+                      : 'bg-white hover:bg-opacity-90'
+                  } font-semibold py-2 px-3 rounded-lg text-sm transition-all transform hover:scale-105 flex items-center justify-center`}
+                  style={{ 
+                    color: isDarkMode ? '#fff' : '#319795'
+                  }}
+                >
+                  <span className="material-symbols-rounded mr-1">workspace_premium</span>
+                  {t.premium.button}
+                </button>
               </div>
             </div>
-          </motion.div>
-        </div>
-      </motion.aside>
+          </div>
+        </motion.div>
+      </div>
+    </motion.aside>
 
-      {/* Add global style for gradient animation */}
-      <style jsx={true.toString()} global={true.toString()}>{`
-        @keyframes gradientAnimation {
-          0% { background-position: 0% 50% }
-          50% { background-position: 100% 50% }
-          100% { background-position: 0% 50% }
-        }
-        
-        /* Customize Material Symbols */
-        .material-symbols-rounded {
-          font-variation-settings:
-            'FILL' 0,
-            'wght' 400,
-            'GRAD' 0,
-            'opsz' 24;
-          font-size: 1.15rem;
-          line-height: 1;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          vertical-align: middle;
-        }
-      `}</style>
-    </>
-  );
+    {/* Add global style for gradient animation */}
+    <style jsx={true.toString()} global={true.toString()}>{`
+      @keyframes gradientAnimation {
+        0% { background-position: 0% 50% }
+        50% { background-position: 100% 50% }
+        100% { background-position: 0% 50% }
+      }
+      
+      /* Customize Material Symbols */
+      .material-symbols-rounded {
+        font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24;
+        font-size: 1.15rem;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        vertical-align: middle;
+      }
+    `}</style>
+  </>
+);
 }

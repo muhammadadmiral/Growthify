@@ -1,170 +1,162 @@
 // src/components/skincare/skincareService.js
-import { 
-    doc, 
-    getDoc, 
-    setDoc, 
-    updateDoc, 
-    collection, 
-    query, 
-    where, 
-    getDocs,
-    addDoc,
-    deleteDoc
-  } from 'firebase/firestore';
-  import { db } from '../../config/firebase';
-  import { skincareProductMockData } from './skincareProductMockData';
+
+// Import the mock data correctly
+import skincareProductMockData from './skincareProductMockData';
+
+// Define sample skin profiles
+const sampleSkinProfiles = [
+  {
+    id: 'profile1',
+    skinType: 'Dry',
+    concerns: ['Dryness', 'Sensitivity', 'Fine Lines'],
+    allergies: ['Fragrance', 'Alcohol'],
+    currentProducts: ['Gentle Cleanser', 'Hydrating Serum', 'Rich Moisturizer'],
+    skinGoals: 'Increase hydration and reduce sensitivity'
+  },
+  {
+    id: 'profile2',
+    skinType: 'Oily',
+    concerns: ['Acne', 'Blackheads', 'Oiliness'],
+    allergies: ['Coconut Oil'],
+    currentProducts: ['Salicylic Acid Cleanser', 'Clay Mask', 'Oil-Free Moisturizer'],
+    skinGoals: 'Reduce breakouts and control oil'
+  },
+  {
+    id: 'profile3',
+    skinType: 'Combination',
+    concerns: ['T-Zone Oiliness', 'Dry Cheeks', 'Occasional Breakouts'],
+    allergies: [],
+    currentProducts: ['Balancing Cleanser', 'Hyaluronic Acid Serum', 'Lightweight Moisturizer'],
+    skinGoals: 'Balance skin without over-drying'
+  }
+];
+
+// Sample skincare routines
+const sampleSkincareRoutines = [
+  {
+    id: 'routine1',
+    userId: 'user1',
+    name: 'Morning Routine',
+    steps: [
+      { order: 1, product: 'Gentle Cleanser', instructions: 'Massage onto damp skin and rinse with lukewarm water.' },
+      { order: 2, product: 'Vitamin C Serum', instructions: 'Apply 3-4 drops to face and neck, avoiding eye area.' },
+      { order: 3, product: 'Moisturizer with SPF', instructions: 'Apply generously to face and neck.' }
+    ],
+    time: 'morning',
+    frequency: 'daily',
+    notes: 'If skin feels extra dry, add facial oil to moisturizer.'
+  },
+  {
+    id: 'routine2',
+    userId: 'user1',
+    name: 'Evening Routine',
+    steps: [
+      { order: 1, product: 'Oil Cleanser', instructions: 'Apply to dry skin to remove makeup and sunscreen.' },
+      { order: 2, product: 'Gentle Cleanser', instructions: 'Second cleanse to remove remaining impurities.' },
+      { order: 3, product: 'Retinol Serum', instructions: 'Use only 2-3 times per week to start.' },
+      { order: 4, product: 'Night Cream', instructions: 'Apply a generous amount to face and neck.' }
+    ],
+    time: 'evening',
+    frequency: 'daily',
+    notes: 'Skip retinol on nights when using exfoliating products.'
+  }
+];
+
+// Mock service functions that would normally connect to Firebase
+const skincareService = {
+  // Skin Profile methods
+  getSkinProfile: async (userId) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Return first profile as sample data
+    return sampleSkinProfiles[0];
+  },
   
-  export const skincareService = {
-    // User Skin Profile Operations
-    async createSkinProfile(userId, skinProfile) {
-      try {
-        const profileRef = doc(db, 'users', userId, 'skincare', 'profile');
-        await setDoc(profileRef, skinProfile, { merge: true });
-        return skinProfile;
-      } catch (error) {
-        console.error('Error creating skin profile:', error);
-        throw error;
-      }
-    },
+  createSkinProfile: async (userId, profileData) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 700));
+    
+    // Return the created profile with an ID
+    return {
+      id: 'new-profile-' + Date.now(),
+      userId,
+      ...profileData,
+      createdAt: new Date().toISOString()
+    };
+  },
   
-    async getSkinProfile(userId) {
-      try {
-        const profileRef = doc(db, 'users', userId, 'skincare', 'profile');
-        const profileSnap = await getDoc(profileRef);
-        return profileSnap.exists() ? profileSnap.data() : null;
-      } catch (error) {
-        console.error('Error fetching skin profile:', error);
-        throw error;
-      }
-    },
+  updateSkinProfile: async (userId, profileId, profileData) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 600));
+    
+    // Return the updated profile
+    return {
+      id: profileId,
+      userId,
+      ...profileData,
+      updatedAt: new Date().toISOString()
+    };
+  },
   
-    async updateSkinProfile(userId, updates) {
-      try {
-        const profileRef = doc(db, 'users', userId, 'skincare', 'profile');
-        await updateDoc(profileRef, updates);
-        return { ...updates };
-      } catch (error) {
-        console.error('Error updating skin profile:', error);
-        throw error;
-      }
-    },
+  // Skincare Routine methods
+  getSkincareRoutine: async (userId) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Return sample routines
+    return sampleSkincareRoutines;
+  },
   
-    // Skincare Routine Operations
-    async addRoutineStep(userId, step) {
-      try {
-        const routineRef = collection(db, 'users', userId, 'skincare', 'routine');
-        const docRef = await addDoc(routineRef, {
-          ...step,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        });
-        return { id: docRef.id, ...step };
-      } catch (error) {
-        console.error('Error adding routine step:', error);
-        throw error;
-      }
-    },
+  addRoutineStep: async (userId, stepData) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 600));
+    
+    // Return the new step
+    return {
+      id: 'step-' + Date.now(),
+      ...stepData,
+      createdAt: new Date().toISOString()
+    };
+  },
   
-    async getSkincareRoutine(userId) {
-      try {
-        const routineRef = collection(db, 'users', userId, 'skincare', 'routine');
-        const routineQuery = query(routineRef, where('userId', '==', userId));
-        const routineSnapshot = await getDocs(routineQuery);
-        return routineSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      } catch (error) {
-        console.error('Error fetching skincare routine:', error);
-        throw error;
-      }
-    },
+  // Product Recommendations
+  getPersonalizedRecommendations: async (userId) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Filter products based on user's skin profile
+    // In a real app, this would use an algorithm based on the user's skin profile
+    return skincareProductMockData.slice(0, 3);
+  },
   
-    async updateRoutineStep(userId, stepId, updates) {
-      try {
-        const stepRef = doc(db, 'users', userId, 'skincare', 'routine', stepId);
-        await updateDoc(stepRef, {
-          ...updates,
-          updatedAt: new Date()
-        });
-        return { id: stepId, ...updates };
-      } catch (error) {
-        console.error('Error updating routine step:', error);
-        throw error;
-      }
-    },
+  getAllProducts: async () => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 400));
+    
+    // Return all products
+    return skincareProductMockData;
+  },
   
-    async deleteRoutineStep(userId, stepId) {
-      try {
-        const stepRef = doc(db, 'users', userId, 'skincare', 'routine', stepId);
-        await deleteDoc(stepRef);
-        return stepId;
-      } catch (error) {
-        console.error('Error deleting routine step:', error);
-        throw error;
-      }
-    },
+  getProductsByCategory: async (category) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Filter products by category
+    return skincareProductMockData.filter(product => 
+      product.category.toLowerCase() === category.toLowerCase()
+    );
+  },
   
-    // Product Recommendations
-    async getPersonalizedRecommendations(userId) {
-      try {
-        // Fetch user's skin profile
-        const skinProfile = await this.getSkinProfile(userId);
-        
-        // If no profile, return mock data
-        if (!skinProfile) {
-          return skincareProductMockData;
-        }
-  
-        // Filter products based on skin profile
-        const recommendations = skincareProductMockData.filter(product => 
-          // Check skin type compatibility
-          product.suitableSkinTypes.some(type => 
-            skinProfile.skinType.toLowerCase().includes(type.toLowerCase())
-          ) &&
-          // Check target concerns
-          product.targetConcerns.some(concern => 
-            skinProfile.concerns?.some(userConcern => 
-              concern.toLowerCase().includes(userConcern.toLowerCase())
-            )
-          )
-        ).map(product => ({
-          ...product,
-          matchPercentage: this.calculateProductMatch(skinProfile, product)
-        }))
-        .sort((a, b) => b.matchPercentage - a.matchPercentage);
-  
-        return recommendations;
-      } catch (error) {
-        console.error('Error fetching personalized recommendations:', error);
-        return skincareProductMockData; // Fallback to mock data
-      }
-    },
-  
-    // Calculate product match percentage
-    calculateProductMatch(skinProfile, product) {
-      let matchScore = 0;
-      const totalPossibleScore = 100;
-  
-      // Skin Type Match (30%)
-      const skinTypeMatch = product.suitableSkinTypes.some(type => 
-        skinProfile.skinType.toLowerCase().includes(type.toLowerCase())
-      );
-      matchScore += skinTypeMatch ? 30 : 0;
-  
-      // Concerns Match (40%)
-      const concernsMatch = product.targetConcerns.filter(concern => 
-        skinProfile.concerns?.some(userConcern => 
-          concern.toLowerCase().includes(userConcern.toLowerCase())
-        )
-      ).length;
-      matchScore += (concernsMatch / product.targetConcerns.length) * 40;
-  
-      // Sensitivities Check (30%)
-      const sensitivityCheck = skinProfile.sensitivities?.every(sensitivity => 
-        !product.ingredients.some(ingredient => 
-          ingredient.toLowerCase().includes(sensitivity.toLowerCase())
-        )
-      ) ?? true;
-      matchScore += sensitivityCheck ? 30 : 0;
-  
-      return Math.min(Math.round(matchScore), 100);
-    }
-  };  
+  getProductsByConcern: async (concern) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Filter products by skin concern
+    return skincareProductMockData.filter(product => 
+      product.concerns.includes(concern)
+    );
+  }
+};
+
+export { skincareService };

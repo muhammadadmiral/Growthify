@@ -62,7 +62,7 @@ const NotFound = lazy(() => import('./pages/public/NotFound'));
 // Router component that determines layouts
 function AppRouter() {
   const location = useLocation();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 1024);
   
   // Enhanced path detection
   const isDashboardPath = (path) => {
@@ -89,6 +89,23 @@ function AppRouter() {
   const isDashboardRoute = isDashboardPath(location.pathname);
   const isAuthRoute = isAuthPath(location.pathname);
 
+  // Close sidebar on mobile when route changes
+  useEffect(() => {
+    if (window.innerWidth < 1024) {
+      setIsSidebarOpen(false);
+    }
+  }, [location.pathname]);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSidebarOpen(window.innerWidth >= 1024);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <>
       {/* Dashboard layout */}
@@ -105,9 +122,9 @@ function AppRouter() {
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             
             {/* Physical Routes */}
-            <Route path="/physical/workout-planner" element={<ProtectedRoute><WorkoutPlanner /></ProtectedRoute>} />
             <Route path="/physical/body-transformation" element={<ProtectedRoute><BodyTransformation /></ProtectedRoute>} />
             <Route path="/physical/nutrition" element={<ProtectedRoute><Nutrition /></ProtectedRoute>} />
+            <Route path="/physical/workout-planner" element={<ProtectedRoute><WorkoutPlanner /></ProtectedRoute>} />
             <Route path="/physical/skincare" element={<ProtectedRoute><Skincare /></ProtectedRoute>} />
             <Route path="/physical/workout-progress" element={<ProtectedRoute><WorkoutProgress /></ProtectedRoute>} />
             <Route path="/physical/workout-history" element={<ProtectedRoute><WorkoutHistory /></ProtectedRoute>} />

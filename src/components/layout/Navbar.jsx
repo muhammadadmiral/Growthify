@@ -1,4 +1,4 @@
-// src/components/layout/Navbar/index.jsx
+// src/components/layout/Navbar.jsx
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { auth, db } from '../../config/firebase';

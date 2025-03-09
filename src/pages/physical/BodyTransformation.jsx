@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useDarkMode } from '../../contexts/DarkModeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { 
   doc, 
   collection, 
@@ -444,4 +444,4 @@ export default function BodyTransformation() {
         )}
       </div>
     </motion.div>
-  );
+  )}

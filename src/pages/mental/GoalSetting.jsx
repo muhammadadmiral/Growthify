@@ -14,7 +14,7 @@ import {
 
 import { useDarkMode } from '../../contexts/DarkModeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 
 import { 
   doc, 
@@ -415,7 +415,237 @@ export default function GoalSetting() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
           >
-            <div className={`px-6 py-4 border-b ${
-              isDarkMode ? 'border-gray-700' : 'border-neutral-200'
-            } flex justify-between items-center`}>
-              <h2 className="text-xl font-bold"></h2>
+            // Add this code at the end of your file:
+
+<div className={`px-6 py-4 border-b ${
+  isDarkMode ? 'border-gray-700' : 'border-neutral-200'
+} flex justify-between items-center`}>
+  <h2 className="text-xl font-bold">
+    {selectedGoal ? t.editGoal : t.addGoal}
+  </h2>
+  <button 
+    onClick={() => {
+      setIsModalOpen(false);
+      setSelectedGoal(null);
+    }}
+    className={`p-1.5 rounded-full ${
+      isDarkMode 
+        ? 'hover:bg-gray-700' 
+        : 'hover:bg-neutral-100'
+    }`}
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+    </svg>
+  </button>
+</div>
+
+{/* Form Content */}
+<div className="p-6 space-y-4">
+  {/* Goal Title */}
+  <div>
+    <label className={`block text-sm font-medium mb-1 ${
+      isDarkMode ? 'text-gray-300' : 'text-neutral-700'
+    }`}>
+      Title
+    </label>
+    <input
+      type="text"
+      placeholder={t.modal.titlePlaceholder}
+      className={`w-full px-3 py-2 rounded-lg border ${
+        isDarkMode 
+          ? 'bg-gray-700 border-gray-600 text-white' 
+          : 'bg-white border-neutral-300 text-neutral-900'
+      } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+      value={selectedGoal?.title || ''}
+      onChange={(e) => setSelectedGoal({
+        ...selectedGoal || {},
+        title: e.target.value
+      })}
+    />
+  </div>
+
+  {/* Goal Description */}
+  <div>
+    <label className={`block text-sm font-medium mb-1 ${
+      isDarkMode ? 'text-gray-300' : 'text-neutral-700'
+    }`}>
+      Description
+    </label>
+    <textarea
+      placeholder={t.modal.descriptionPlaceholder}
+      rows="3"
+      className={`w-full px-3 py-2 rounded-lg border ${
+        isDarkMode 
+          ? 'bg-gray-700 border-gray-600 text-white' 
+          : 'bg-white border-neutral-300 text-neutral-900'
+      } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+      value={selectedGoal?.description || ''}
+      onChange={(e) => setSelectedGoal({
+        ...selectedGoal || {},
+        description: e.target.value
+      })}
+    />
+  </div>
+
+  {/* Goal Category */}
+  <div>
+    <label className={`block text-sm font-medium mb-1 ${
+      isDarkMode ? 'text-gray-300' : 'text-neutral-700'
+    }`}>
+      Category
+    </label>
+    <select
+      className={`w-full px-3 py-2 rounded-lg border ${
+        isDarkMode 
+          ? 'bg-gray-700 border-gray-600 text-white' 
+          : 'bg-white border-neutral-300 text-neutral-900'
+      } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+      value={selectedGoal?.category || ''}
+      onChange={(e) => setSelectedGoal({
+        ...selectedGoal || {},
+        category: e.target.value
+      })}
+    >
+      <option value="">Select Category</option>
+      {categories.map((category, index) => (
+        <option key={index} value={category}>{category}</option>
+      ))}
+    </select>
+  </div>
+
+  {/* Goal Difficulty */}
+  <div>
+    <label className={`block text-sm font-medium mb-1 ${
+      isDarkMode ? 'text-gray-300' : 'text-neutral-700'
+    }`}>
+      Difficulty
+    </label>
+    <select
+      className={`w-full px-3 py-2 rounded-lg border ${
+        isDarkMode 
+          ? 'bg-gray-700 border-gray-600 text-white' 
+          : 'bg-white border-neutral-300 text-neutral-900'
+      } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+      value={selectedGoal?.difficulty || ''}
+      onChange={(e) => setSelectedGoal({
+        ...selectedGoal || {},
+        difficulty: e.target.value
+      })}
+    >
+      <option value="">Select Difficulty</option>
+      {difficulties.map((difficulty, index) => (
+        <option key={index} value={difficulty}>{difficulty}</option>
+      ))}
+    </select>
+  </div>
+
+  {/* Due Date */}
+  <div>
+    <label className={`block text-sm font-medium mb-1 ${
+      isDarkMode ? 'text-gray-300' : 'text-neutral-700'
+    }`}>
+      Due Date
+    </label>
+    <input
+      type="date"
+      className={`w-full px-3 py-2 rounded-lg border ${
+        isDarkMode 
+          ? 'bg-gray-700 border-gray-600 text-white' 
+          : 'bg-white border-neutral-300 text-neutral-900'
+      } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+      value={selectedGoal?.dueDate || ''}
+      onChange={(e) => setSelectedGoal({
+        ...selectedGoal || {},
+        dueDate: e.target.value
+      })}
+    />
+  </div>
+
+  {/* Progress (only for editing) */}
+  {selectedGoal && (
+    <div>
+      <label className={`block text-sm font-medium mb-1 ${
+        isDarkMode ? 'text-gray-300' : 'text-neutral-700'
+      }`}>
+        Progress (%)
+      </label>
+      <input
+        type="range"
+        min="0"
+        max="100"
+        step="5"
+        className="w-full"
+        value={selectedGoal?.progress || 0}
+        onChange={(e) => setSelectedGoal({
+          ...selectedGoal,
+          progress: parseInt(e.target.value)
+        })}
+      />
+      <div className="flex justify-between text-xs">
+        <span>0%</span>
+        <span>50%</span>
+        <span>100%</span>
+      </div>
+    </div>
+  )}
+</div>
+
+{/* Form Actions */}
+<div className={`px-6 py-4 border-t ${
+  isDarkMode ? 'border-gray-700' : 'border-neutral-200'
+} flex justify-end space-x-3`}>
+  <button
+    onClick={() => {
+      setIsModalOpen(false);
+      setSelectedGoal(null);
+    }}
+    className={`px-4 py-2 rounded-lg ${
+      isDarkMode 
+        ? 'bg-gray-700 text-white hover:bg-gray-600' 
+        : 'bg-neutral-200 text-neutral-800 hover:bg-neutral-300'
+    }`}
+  >
+    {t.modal.cancel}
+  </button>
+  <button
+    onClick={() => handleSaveGoal(selectedGoal)}
+    className="px-4 py-2 rounded-lg bg-primary-500 text-white hover:bg-primary-600"
+  >
+    {t.modal.save}
+  </button>
+</div>
+</motion.div>
+</motion.div>
+</AnimatePresence>
+);
+};
+
+return (
+<div className={`px-6 py-8 ${
+isDarkMode ? 'bg-gray-900 text-white' : 'bg-neutral-50 text-neutral-900'
+} min-h-screen`}>
+<div className="container mx-auto">
+<div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+<div>
+<h1 className="text-2xl md:text-3xl font-bold">{t.title}</h1>
+<p className={isDarkMode ? 'text-gray-300' : 'text-neutral-600'}>{t.subtitle}</p>
+</div>
+<button
+onClick={() => {
+  setSelectedGoal(null);
+  setIsModalOpen(true);
+}}
+className="mt-4 md:mt-0 flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-500 text-white hover:bg-primary-600 transition-colors"
+>
+<Plus className="w-5 h-5" />
+{t.addGoal}
+</button>
+</div>
+
+{renderContent()}
+{renderGoalModal()}
+</div>
+</div>
+);
+}

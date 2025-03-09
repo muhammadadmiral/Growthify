@@ -1,63 +1,68 @@
-// src/components/layout/MainLayout.jsx
-import { useEffect } from 'react';
-import { useDarkMode } from '../../contexts/DarkModeContext';
+// src/components/layout/Layout.jsx
+import React, { useState, useEffect } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
+import Sidebar from './Sidebar';
 import Navbar from './Navbar';
-import Footer from './Footer';
+import Footer from './Footer'; // Import the Footer component
+import { useDarkMode } from '../../contexts/DarkModeContext';
 
-export default function MainLayout({ children }) {
+const MainLayout = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { isDarkMode } = useDarkMode();
-  
-  // Reset body styles that might be problematic
+  const location = useLocation();
+
+  // Close sidebar on route change for mobile devices
   useEffect(() => {
-    // Fix for body styling issues
-    document.body.style.display = 'block';
-    document.body.style.placeItems = 'unset';
-    document.body.style.minHeight = '100vh';
-    document.body.style.margin = '0';
-    document.body.style.padding = '0';
-    document.body.style.width = '100%';
-    document.body.style.backgroundColor = isDarkMode ? '#111827' : '#FFFFFF';
-    document.body.style.color = isDarkMode ? '#F1F5F9' : '#1A202C';
-    
-    // Reset root styling
-    const rootElement = document.getElementById('root');
-    if (rootElement) {
-      rootElement.style.width = '100%';
-      rootElement.style.height = 'auto';
-      rootElement.style.minHeight = '100vh';
-      rootElement.style.maxWidth = 'none';
-      rootElement.style.margin = '0';
-      rootElement.style.padding = '0';
-      rootElement.style.textAlign = 'left';
-      rootElement.style.display = 'flex';
-      rootElement.style.flexDirection = 'column';
+    if (window.innerWidth < 1024) {
+      setIsSidebarOpen(false);
     }
-    
-    return () => {
-      // Cleanup if needed
-      document.body.style = '';
+  }, [location.pathname]);
+
+  // Listen for window resize to handle sidebar visibility
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsSidebarOpen(true);
+      } else {
+        setIsSidebarOpen(false);
+      }
     };
-  }, [isDarkMode]);
+
+    // Set initial state based on screen size
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
-    <div className={`flex flex-col min-h-screen w-full ${
-      isDarkMode 
-        ? 'text-gray-200 bg-gray-900' 
-        : 'text-text-dark bg-white'
-    } relative overflow-x-hidden`}>
-      {/* Subtle gradient overlay for visual polish */}
-      {isDarkMode ? (
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900/50 to-gray-800/50 pointer-events-none"></div>
-      ) : (
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-50/50 to-secondary-50/50 pointer-events-none"></div>
-      )}
+    <div className={`min-h-screen flex flex-col ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+      {/* Navbar */}
+      <Navbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
       
-      {/* Main content */}
-      <div className="relative z-10 flex flex-col min-h-screen">
-        <Navbar />
-        <main className="flex-grow w-full">{children}</main>
-        <Footer />
+      <div className="flex flex-1 pt-16 sm:pt-20 relative">
+        {/* Sidebar */}
+        <Sidebar 
+          isOpen={isSidebarOpen} 
+          onClose={() => setIsSidebarOpen(false)} 
+        />
+        
+        {/* Main Content with Footer */}
+        <div className={`flex flex-col flex-1 transition-all duration-300 ${
+          isSidebarOpen ? 'lg:ml-64' : ''
+        }`}>
+          <main className="flex-1 overflow-y-auto">
+            <div className="container px-4 sm:px-6 lg:px-8 py-6 mx-auto">
+              <Outlet />
+            </div>
+          </main>
+          
+          {/* Footer */}
+          <Footer isDarkMode={isDarkMode} />
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default MainLayout;

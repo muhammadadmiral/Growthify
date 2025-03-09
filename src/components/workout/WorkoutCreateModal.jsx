@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { doc, setDoc, collection } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { useAuth } from '../../contexts/AuthContext';
-import { db, storage } from '../../config/firebaseConfig';
+import { useAuth } from '../../hooks/useAuth';
+import { db, storage } from '../../config/firebase';
 import { useWorkoutPlans } from '../../hooks/useWorkoutPlans';
 
 
@@ -16,30 +16,7 @@ const WorkoutCreateModal = ({
   }) => {
     const { createWorkoutPlan } = useWorkoutPlans();
   
-    // In your handleSubmit method
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-  
-      if (!validateForm()) return;
-  
-      setIsSubmitting(true);
-  
-      try {
-        // Use the createWorkoutPlan method from the hook
-        const newPlan = await createWorkoutPlan(formData);
-        
-        // Optional: you can pass the new plan back to parent component
-        onSave && onSave(newPlan);
-        
-        // Close the modal
-        onClose();
-      } catch (error) {
-        // Handle error (show error message)
-        console.error('Error creating workout plan:', error);
-      } finally {
-        setIsSubmitting(false);
-      }
-    };
+   
   
   // Translation content
   const translations = {
@@ -449,4 +426,373 @@ const WorkoutCreateModal = ({
     }`}
   />
 </div>
+</div>
+    ));
+  };
+
+  // Modal animation variants
+  const modalVariants = {
+    hidden: { opacity: 0, y: 50, scale: 0.95 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      transition: { duration: 0.3, ease: 'easeOut' } 
+    },
+    exit: { 
+      opacity: 0, 
+      y: 50, 
+      scale: 0.95,
+      transition: { duration: 0.2, ease: 'easeIn' } 
+    }
+  };
+
+  // Only render the modal when it's open
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop */}
+          <motion.div 
+            className="fixed inset-0 bg-black bg-opacity-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          ></motion.div>
+          
+          {/* Modal */}
+          <div className="flex min-h-screen items-center justify-center p-4">
+            <motion.div 
+              className={`w-full max-w-4xl rounded-xl p-6 ${
+                isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-neutral-900'
+              } shadow-2xl relative max-h-[90vh] overflow-y-auto`}
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal header */}
+              <div className="flex justify-between items-center mb-6 sticky top-0 z-10 pb-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-2xl font-bold">
+                  {initialPlan ? `Edit: ${initialPlan.title}` : t.title}
+                </h2>
+                <button 
+                  onClick={onClose}
+                  className={`p-2 rounded-lg ${
+                    isDarkMode 
+                      ? 'text-gray-400 hover:bg-gray-800 hover:text-white' 
+                      : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+                  }`}
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
               
+              {/* Form */}
+              <form onSubmit={handleSubmit}>
+                {/* Basic Information */}
+                <div className="mb-6">
+                  <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-gray-200' : 'text-neutral-800'}`}>
+                    {t.basicInfo}
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Plan Title */}
+                    <div className="col-span-2">
+                      <label className={`block mb-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-neutral-700'}`}>
+                        {t.planTitle}
+                      </label>
+                      <input
+                        type="text"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleChange}
+                        placeholder={t.planTitlePlaceholder}
+                        className={`w-full p-2 rounded-lg border ${
+                          isDarkMode 
+                            ? 'bg-gray-800 border-gray-700 text-white' 
+                            : 'bg-white border-neutral-300 text-neutral-900'
+                        } ${errors.title ? 'border-red-500' : ''}`}
+                      />
+                      {errors.title && (
+                        <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+                      )}
+                    </div>
+
+                    {/* Description */}
+                    <div className="col-span-2">
+                      <label className={`block mb-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-neutral-700'}`}>
+                        {t.description}
+                      </label>
+                      <textarea
+                        name="description"
+                        value={formData.description}
+                        onChange={handleChange}
+                        placeholder={t.descriptionPlaceholder}
+                        rows={3}
+                        className={`w-full p-2 rounded-lg border ${
+                          isDarkMode 
+                            ? 'bg-gray-800 border-gray-700 text-white' 
+                            : 'bg-white border-neutral-300 text-neutral-900'
+                        } ${errors.description ? 'border-red-500' : ''}`}
+                      />
+                      {errors.description && (
+                        <p className="text-red-500 text-sm mt-1">{errors.description}</p>
+                      )}
+                    </div>
+
+                    {/* Category */}
+                    <div>
+                      <label className={`block mb-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-neutral-700'}`}>
+                        {t.category}
+                      </label>
+                      <select
+                        name="category"
+                        value={formData.category}
+                        onChange={handleChange}
+                        className={`w-full p-2 rounded-lg border ${
+                          isDarkMode 
+                            ? 'bg-gray-800 border-gray-700 text-white' 
+                            : 'bg-white border-neutral-300 text-neutral-900'
+                        }`}
+                      >
+                        {Object.entries(t.categoryOptions).map(([value, label]) => (
+                          <option key={value} value={value}>{label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Level */}
+                    <div>
+                      <label className={`block mb-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-neutral-700'}`}>
+                        {t.level}
+                      </label>
+                      <select
+                        name="level"
+                        value={formData.level}
+                        onChange={handleChange}
+                        className={`w-full p-2 rounded-lg border ${
+                          isDarkMode 
+                            ? 'bg-gray-800 border-gray-700 text-white' 
+                            : 'bg-white border-neutral-300 text-neutral-900'
+                        }`}
+                      >
+                        {Object.entries(t.levelOptions).map(([value, label]) => (
+                          <option key={value} value={value}>{label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Frequency & Duration */}
+                    <div>
+                      <label className={`block mb-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-neutral-700'}`}>
+                        {t.frequency}
+                      </label>
+                      <div className="flex items-center">
+                        <input
+                          type="number"
+                          name="frequency"
+                          min="1"
+                          max="7"
+                          value={formData.frequency}
+                          onChange={handleChange}
+                          className={`w-16 p-2 rounded-lg border ${
+                            isDarkMode 
+                              ? 'bg-gray-800 border-gray-700 text-white' 
+                              : 'bg-white border-neutral-300 text-neutral-900'
+                          }`}
+                        />
+                        <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                          {t.timesPerWeek}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className={`block mb-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-neutral-700'}`}>
+                        {t.duration}
+                      </label>
+                      <input
+                        type="number"
+                        name="duration"
+                        min="5"
+                        max="180"
+                        value={formData.duration}
+                        onChange={handleChange}
+                        className={`w-full p-2 rounded-lg border ${
+                          isDarkMode 
+                            ? 'bg-gray-800 border-gray-700 text-white' 
+                            : 'bg-white border-neutral-300 text-neutral-900'
+                        }`}
+                      />
+                    </div>
+                    
+                    {/* Schedule */}
+                    <div className="col-span-2">
+                      <label className={`block mb-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-neutral-700'}`}>
+                        {t.schedule}
+                      </label>
+                      <div className="grid grid-cols-7 gap-2">
+                        {Object.entries(t.days).map(([day, label]) => (
+                          <button
+                            key={day}
+                            type="button"
+                            onClick={() => toggleScheduleDay(day)}
+                            className={`p-2 rounded-lg text-xs ${
+                              formData.schedule.includes(day)
+                                ? isDarkMode 
+                                  ? 'bg-primary-700 text-white' 
+                                  : 'bg-primary-100 text-primary-800'
+                                : isDarkMode
+                                  ? 'bg-gray-800 text-gray-400 border border-gray-700' 
+                                  : 'bg-gray-100 text-gray-700 border border-gray-200'
+                            }`}
+                          >
+                            {label.slice(0, 3)}
+                          </button>
+                        ))}
+                      </div>
+                      {errors.schedule && (
+                        <p className="text-red-500 text-sm mt-1">{errors.schedule}</p>
+                      )}
+                    </div>
+
+                    {/* Cover Image */}
+                    <div className="col-span-2">
+                      <label className={`block mb-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-neutral-700'}`}>
+                        {t.coverImage}
+                      </label>
+                      
+                      {/* Current Image Preview */}
+                      {formData.image && (
+                        <div className="mb-3">
+                          <img 
+                            src={formData.image} 
+                            alt="Cover" 
+                            className="h-40 w-full object-cover rounded-lg"
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Image Upload */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <p className={`text-sm mb-2 ${isDarkMode ? 'text-gray-400' : 'text-neutral-600'}`}>
+                            {t.customImage}
+                          </p>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className={`w-full p-2 rounded-lg border ${
+                              isDarkMode 
+                                ? 'bg-gray-800 border-gray-700 text-white' 
+                                : 'bg-white border-neutral-300 text-neutral-900'
+                            }`}
+                          />
+                        </div>
+                        
+                        <div>
+                          <p className={`text-sm mb-2 ${isDarkMode ? 'text-gray-400' : 'text-neutral-600'}`}>
+                            {t.recommendedImage}
+                          </p>
+                          <div className="grid grid-cols-3 gap-2">
+                            {t.systemImages.map((imageUrl, index) => (
+                              <button
+                                key={index}
+                                type="button"
+                                onClick={() => selectSystemImage(imageUrl)}
+                                className={`h-16 rounded-lg overflow-hidden border-2 ${
+                                  formData.image === imageUrl
+                                    ? 'border-primary-500'
+                                    : isDarkMode 
+                                      ? 'border-gray-700' 
+                                      : 'border-gray-200'
+                                }`}
+                              >
+                                <img
+                                  src={imageUrl}
+                                  alt={`Option ${index + 1}`}
+                                  className="h-full w-full object-cover"
+                                />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Exercises */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className={`text-lg font-bold ${isDarkMode ? 'text-gray-200' : 'text-neutral-800'}`}>
+                      Exercises
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={addExercise}
+                      className={`px-3 py-2 rounded-lg text-sm flex items-center ${
+                        isDarkMode 
+                          ? 'bg-primary-700 text-white hover:bg-primary-600' 
+                          : 'bg-primary-500 text-white hover:bg-primary-600'
+                      }`}
+                    >
+                      <svg className="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                      {t.addExercise}
+                    </button>
+                  </div>
+                  
+                  {errors.exercises && (
+                    <p className="text-red-500 text-sm mb-3">{errors.exercises}</p>
+                  )}
+                  
+                  <div className="space-y-4">
+                    {renderExercises()}
+                  </div>
+                </div>
+                
+                {/* Action buttons */}
+                <div className="flex justify-end space-x-4 sticky bottom-0 pt-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className={`px-4 py-2 rounded-lg ${
+                      isDarkMode 
+                        ? 'bg-gray-800 text-white hover:bg-gray-700' 
+                        : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                    }`}
+                  >
+                    {t.cancel}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={`px-4 py-2 rounded-lg ${
+                      isDarkMode 
+                        ? 'bg-primary-700 text-white hover:bg-primary-600' 
+                        : 'bg-primary-500 text-white hover:bg-primary-600'
+                    } disabled:opacity-50`}
+                  >
+                    {isSubmitting ? 'Saving...' : t.save}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+export default WorkoutCreateModal;

@@ -11,7 +11,7 @@ import {
 
 import { useDarkMode } from '../../contexts/DarkModeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 
 // Mock data (to be replaced with actual Firebase data)
 const mockWorkoutHistory = [
