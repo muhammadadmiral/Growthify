@@ -1,4 +1,3 @@
-// src/App.jsx
 import { lazy, Suspense } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -34,7 +33,7 @@ const Communities = lazy(() => import('./pages/dashboard/Communities'));
 const NotFound = lazy(() => import('./pages/public/NotFound'));
 
 // Protected route component
-import ProtectedRoute from './routes/ProtectedRoute';
+import ProtectedRoute from './route/ProtectedRoute'; // Corrected path
 
 function App() {
   const location = useLocation();
