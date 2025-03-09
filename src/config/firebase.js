@@ -1,222 +1,164 @@
-// src/config/firebase.js
-import { initializeApp } from 'firebase/app';
+// Enhanced auth methods to add to firebase.js
+
+// Import additional Firebase auth providers
 import { 
-  getAuth, 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword,
-  signOut,
-  sendPasswordResetEmail,
-  GoogleAuthProvider,
-  FacebookAuthProvider,
-  signInWithPopup,
-  sendEmailVerification
+  RecaptchaVerifier,
+  signInWithPopup, 
+  OAuthProvider,
+  PhoneAuthProvider,
+  signInWithPhoneNumber
 } from 'firebase/auth';
-import { 
-  getFirestore, 
-  doc, 
-  setDoc, 
-  getDoc,
-  updateDoc
-} from 'firebase/firestore';
 
+// Apple Sign In
+export const signInWithApple = async () => {
+  try {
+    const provider = new OAuthProvider('apple.com');
+    // Add scopes if needed
+    provider.addScope('email');
+    provider.addScope('name');
+    
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
 
-console.log('Firebase Config:', {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID
-  });
-  
-  const firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID
-  };
-// Inisialisasi Firebase
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+    // Store/update user data in Firestore
+    const userRef = doc(db, 'users', user.uid);
+    const userSnap = await getDoc(userRef);
 
-// Provider untuk login sosial
-const googleProvider = new GoogleAuthProvider();
-const facebookProvider = new FacebookAuthProvider();
-
-
-// src/config/firebase.js
-export const registerWithEmailAndPassword = async (name, email, password) => {
-    try {
-      // Validasi input
-      if (!name || name.trim() === '') {
-        throw new Error('Nama harus diisi');
-      }
-  
-      if (!email || !/\S+@\S+\.\S+/.test(email)) {
-        throw new Error('Email tidak valid');
-      }
-  
-      if (!password || password.length < 8) {
-        throw new Error('Password minimal 8 karakter');
-      }
-  
-      // Buat user dengan email dan password
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-  
-      // Kirim email verifikasi
-      await sendEmailVerification(user);
-  
-      // Simpan data tambahan ke Firestore
-      await setDoc(doc(db, 'users', user.uid), {
+    if (!userSnap.exists()) {
+      // Create new user document if it doesn't exist
+      await setDoc(userRef, {
         uid: user.uid,
-        name: name.trim(),
-        email,
-        photoURL: user.photoURL || null,
-        emailVerified: false,
+        name: user.displayName || 'Apple User', // Apple might not provide name
+        email: user.email,
+        photoURL: user.photoURL,
+        emailVerified: user.emailVerified,
         profileCompleted: false,
         createdAt: new Date(),
         lastLogin: new Date(),
         role: 'user',
         status: 'active'
       });
-  
-      return user;
-    } catch (error) {
-      console.error('Error registering user:', error);
-  
-      // Tangani error spesifik dari Firebase
-      switch (error.code) {
-        case 'auth/email-already-in-use':
-          throw new Error('Email sudah terdaftar. Gunakan email lain.');
-        case 'auth/invalid-email':
-          throw new Error('Format email tidak valid.');
-        case 'auth/weak-password':
-          throw new Error('Password terlalu lemah. Gunakan password yang lebih kuat.');
-        default:
-          // Jika error kustom yang sudah ditambahkan sebelumnya
-          if (error.message) {
-            throw error;
-          }
-          
-          // Error umum
-          throw new Error('Registrasi gagal. Silakan coba lagi.');
-      }
+    } else {
+      // Update last login if user already exists
+      await updateDoc(userRef, {
+        lastLogin: new Date()
+      });
     }
-  };
-  
-  // Tambahkan fungsi untuk memeriksa status profil
-  export const checkProfileCompletion = async (uid) => {
-    try {
-      const userRef = doc(db, 'users', uid);
+
+    return user;
+  } catch (error) {
+    console.error('Error signing in with Apple:', error);
+    throw error;
+  }
+};
+
+// Phone authentication - Step 1: Initialize reCAPTCHA verifier
+export const initializeRecaptcha = (containerId) => {
+  try {
+    // Create a new RecaptchaVerifier instance
+    window.recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+      'size': 'invisible',
+      'callback': (response) => {
+        // reCAPTCHA solved, allow sending verification code
+        console.log('reCAPTCHA verified');
+      },
+      'expired-callback': () => {
+        // Response expired. Ask user to solve reCAPTCHA again.
+        console.log('reCAPTCHA expired');
+      }
+    });
+    
+    return window.recaptchaVerifier;
+  } catch (error) {
+    console.error('Error initializing reCAPTCHA:', error);
+    throw error;
+  }
+};
+
+// Phone authentication - Step 2: Send verification code
+export const sendPhoneVerificationCode = async (phoneNumber) => {
+  try {
+    // Initialize reCAPTCHA if not already initialized
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        'size': 'invisible'
+      });
+    }
+    
+    const appVerifier = window.recaptchaVerifier;
+    const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+    
+    // Save confirmation result to window to access it later
+    window.confirmationResult = confirmationResult;
+    
+    return confirmationResult.verificationId;
+  } catch (error) {
+    console.error('Error sending verification code:', error);
+    
+    // Reset reCAPTCHA if there's an error
+    if (window.recaptchaVerifier) {
+      window.recaptchaVerifier.clear();
+      window.recaptchaVerifier = null;
+    }
+    
+    throw error;
+  }
+};
+
+// Phone authentication - Step 3: Verify code and sign in
+export const verifyPhoneCode = async (verificationId, verificationCode) => {
+  try {
+    // If using window.confirmationResult from previous step
+    if (window.confirmationResult) {
+      const result = await window.confirmationResult.confirm(verificationCode);
+      const user = result.user;
+      
+      // Create or update user in Firestore
+      const userRef = doc(db, 'users', user.uid);
       const userSnap = await getDoc(userRef);
-  
-      if (userSnap.exists()) {
-        const userData = userSnap.data();
-        return userData.profileCompleted || false;
+      
+      if (!userSnap.exists()) {
+        // Create new user record
+        await setDoc(userRef, {
+          uid: user.uid,
+          phoneNumber: user.phoneNumber,
+          name: `User ${user.phoneNumber.slice(-4)}`, // Default name based on last 4 digits
+          createdAt: new Date(),
+          lastLogin: new Date(),
+          profileCompleted: false,
+          role: 'user',
+          status: 'active'
+        });
+      } else {
+        // Update existing user
+        await updateDoc(userRef, {
+          lastLogin: new Date(),
+          phoneNumber: user.phoneNumber // Update in case it changed
+        });
       }
       
-      return false;
-    } catch (error) {
-      console.error('Error checking profile completion:', error);
-      return false;
-    }
-  };
-
-
-// Fungsi login
-export const loginWithEmailAndPassword = async (email, password) => {
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    // Update last login di Firestore
-    await updateDoc(doc(db, 'users', user.uid), {
-      lastLogin: new Date()
-    });
-
-    return user;
-  } catch (error) {
-    console.error('Error logging in:', error);
-    throw error;
-  }
-};
-
-// Login dengan Google
-export const signInWithGoogle = async () => {
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
-
-    // Simpan/update data user ke Firestore
-    const userRef = doc(db, 'users', user.uid);
-    const userSnap = await getDoc(userRef);
-
-    if (!userSnap.exists()) {
-      // Buat dokumen baru jika user belum ada
-      await setDoc(userRef, {
-        uid: user.uid,
-        name: user.displayName,
-        email: user.email,
-        photoURL: user.photoURL,
-        emailVerified: user.emailVerified,
-        createdAt: new Date(),
-        lastLogin: new Date(),
-        role: 'user',
-        status: 'active'
-      });
+      return user;
     } else {
-      // Update last login jika user sudah ada
-      await updateDoc(userRef, {
-        lastLogin: new Date()
-      });
+      // If not using window.confirmationResult, use PhoneAuthProvider
+      const credential = PhoneAuthProvider.credential(verificationId, verificationCode);
+      const userCredential = await signInWithCredential(auth, credential);
+      return userCredential.user;
     }
-
-    return user;
   } catch (error) {
-    console.error('Error signing in with Google:', error);
+    console.error('Error verifying code:', error);
     throw error;
   }
 };
 
-// Login dengan Facebook (serupa dengan Google)
-export const signInWithFacebook = async () => {
+// Password reset with custom redirect URL
+export const sendPasswordResetWithRedirect = async (email, redirectUrl) => {
   try {
-    const result = await signInWithPopup(auth, facebookProvider);
-    const user = result.user;
-
-    const userRef = doc(db, 'users', user.uid);
-    const userSnap = await getDoc(userRef);
-
-    if (!userSnap.exists()) {
-      await setDoc(userRef, {
-        uid: user.uid,
-        name: user.displayName,
-        email: user.email,
-        photoURL: user.photoURL,
-        emailVerified: user.emailVerified,
-        createdAt: new Date(),
-        lastLogin: new Date(),
-        role: 'user',
-        status: 'active'
-      });
-    } else {
-      await updateDoc(userRef, {
-        lastLogin: new Date()
-      });
-    }
-
-    return user;
-  } catch (error) {
-    console.error('Error signing in with Facebook:', error);
-    throw error;
-  }
-};
-
-// Fungsi reset password
-export const resetPassword = async (email) => {
-  try {
-    await sendPasswordResetEmail(auth, email);
+    const actionCodeSettings = {
+      url: redirectUrl,
+      handleCodeInApp: true
+    };
+    
+    await sendPasswordResetEmail(auth, email, actionCodeSettings);
     return true;
   } catch (error) {
     console.error('Error sending password reset email:', error);
@@ -224,32 +166,37 @@ export const resetPassword = async (email) => {
   }
 };
 
-// Fungsi logout
-export const logout = async () => {
+// Verify password reset code
+export const verifyPasswordResetCode = async (code) => {
   try {
-    await signOut(auth);
+    // Verify the password reset code is valid
+    const email = await auth.verifyPasswordResetCode(code);
+    return email;
   } catch (error) {
-    console.error('Error logging out:', error);
+    console.error('Error verifying password reset code:', error);
     throw error;
   }
 };
 
-// Fungsi untuk mendapatkan detail user dari Firestore
-export const getUserProfile = async (uid) => {
+// Complete password reset
+export const confirmPasswordReset = async (code, newPassword) => {
   try {
-    const userRef = doc(db, 'users', uid);
-    const userSnap = await getDoc(userRef);
-
-    if (userSnap.exists()) {
-      return userSnap.data();
-    } else {
-      throw new Error('User not found');
-    }
+    // Confirm the password reset
+    await auth.confirmPasswordReset(code, newPassword);
+    return true;
   } catch (error) {
-    console.error('Error getting user profile:', error);
+    console.error('Error confirming password reset:', error);
     throw error;
   }
 };
 
-
-export default app;
+// Check if user exists by email
+export const checkUserExists = async (email) => {
+  try {
+    const methods = await fetchSignInMethodsForEmail(auth, email);
+    return methods.length > 0;
+  } catch (error) {
+    console.error('Error checking if user exists:', error);
+    return false;
+  }
+};
