@@ -8,6 +8,7 @@ import { auth, db } from '../../config/firebase';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { MoonIcon, SunIcon, MenuIcon, XIcon, ChevronDownIcon } from 'lucide-react';
+import LanguageSwitcher from '../common/LanguageSwitcher'; // Sesuaikan path jika diperlukan
 
 // Simple translations object
 const translations = {
@@ -342,31 +343,8 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
               </AnimatePresence>
             </motion.button>
 
-            {/* Language Switcher with hover effects */}
-            <motion.button 
-              onClick={toggleLanguage}
-              className="flex items-center space-x-2 p-2 rounded-lg relative overflow-hidden text-primary-500 hover:text-primary-400 transition-colors duration-300"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label="Switch Language"
-            >
-              <span className={`absolute inset-0 rounded-lg opacity-0 hover:opacity-100 ${
-                isDarkMode ? 'bg-primary-900/50' : 'bg-primary-50/70'
-              } transition-opacity duration-300`}></span>
-              
-              {/* Flag with glamorous effects */}
-              <div className="relative">
-                <motion.div 
-                  className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary-500 to-secondary-500 opacity-0 hover:opacity-100 blur-sm transition-opacity duration-300"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                ></motion.div>
-                <span className="w-5 h-5 rounded-full flex items-center justify-center relative">
-                  {language === 'en' ? '🇺🇸' : '🇮🇩'}
-                </span>
-              </div>
-              <span className="text-sm font-medium">{language === 'en' ? 'EN' : 'ID'}</span>
-            </motion.button>
+           {/* Language Switcher Component */}
+<LanguageSwitcher variant="default" />
 
             {/* User Menu for Logged In Users */}
             {isAuthCheckComplete && isUserLoggedIn ? (

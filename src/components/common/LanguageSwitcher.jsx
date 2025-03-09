@@ -1,5 +1,4 @@
-// src/components/common/LanguageSwitcher.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useDarkMode } from '../../contexts/DarkModeContext';
@@ -7,6 +6,7 @@ import { useDarkMode } from '../../contexts/DarkModeContext';
 export default function LanguageSwitcher({ variant = "default" }) {
   const { language, toggleLanguage, isChangingLanguage } = useLanguage();
   const { isDarkMode } = useDarkMode();
+  const [imageError, setImageError] = useState(false);
   
   // Variants for different sizes/styles
   const variants = {
@@ -39,18 +39,28 @@ export default function LanguageSwitcher({ variant = "default" }) {
   
   const style = variants[variant] || variants.default;
   
-  // Flag URLs with fallbacks
-  const flags = {
-    en: [
-      '/icons/flags/us_flag.svg', 
-      '/assets/flags/us_flag.svg',
-      '/images/flags/us_flag.svg'
-    ],
-    id: [
-      '/icons/flags/id_flag.svg',
-      '/assets/flags/id_flag.svg',
-      '/images/flags/id_flag.svg'
-    ]
+  // Flag paths with multiple potential locations to try
+  const flagPaths = language === 'en' 
+    ? [
+        '/flags/us-flag.png',
+        '/assets/flags/us-flag.png',
+        '/images/flags/us-flag.png',
+        '/public/flags/us-flag.png'
+      ]
+    : [
+        '/flags/idn-flag.png',
+        '/assets/flags/idn-flag.png',
+        '/images/flags/idn-flag.png',
+        '/public/flags/idn-flag.png'
+      ];
+  
+  // We'll try the first path initially
+  const [currentFlagPathIndex, setCurrentFlagPathIndex] = useState(0);
+  const flagPath = flagPaths[currentFlagPathIndex];
+  
+  // Get language text
+  const getText = (lang) => {
+    return lang === 'en' ? 'EN' : 'ID';
   };
   
   // Animation variants
@@ -88,31 +98,13 @@ export default function LanguageSwitcher({ variant = "default" }) {
     }
   };
   
-  // Get language text
-  const getText = (lang) => {
-    return lang === 'en' ? 'EN' : 'ID';
-  };
-  
-  // Try each flag path
-  const getFallbackFlag = (lang) => {
-    // Create emoji fallback
-    if (lang === 'en') return '🇺🇸';
-    if (lang === 'id') return '🇮🇩';
-    return '🌐';
-  };
-  
-  // Track image loading state
-  const [imageLoaded, setImageLoaded] = React.useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
-  
-  // Try the next flag image when one fails
   const handleImageError = () => {
-    const availablePaths = flags[language] || [];
-    if (currentImageIndex < availablePaths.length - 1) {
-      setCurrentImageIndex(currentImageIndex + 1);
+    // Try the next flag path if available
+    if (currentFlagPathIndex < flagPaths.length - 1) {
+      setCurrentFlagPathIndex(currentFlagPathIndex + 1);
     } else {
-      // All images failed, show emoji
-      setImageLoaded(false);
+      // If all paths have failed, fall back to emoji
+      setImageError(true);
     }
   };
   
@@ -145,17 +137,17 @@ export default function LanguageSwitcher({ variant = "default" }) {
           animate="visible"
           exit="exit"
         >
-          {imageLoaded ? (
+          {!imageError ? (
             <img 
-              src={flags[language]?.[currentImageIndex]}
+              key={`flag-${language}-${currentFlagPathIndex}`}
+              src={flagPath}
               alt={language === 'en' ? 'English' : 'Bahasa Indonesia'}
               className={`${style.flagSize} mr-2 rounded-full object-cover shadow-sm`}
-              onLoad={() => setImageLoaded(true)}
               onError={handleImageError}
             />
           ) : (
             <span className={`${style.flagSize} mr-2 rounded-full flex items-center justify-center`}>
-              {getFallbackFlag(language)}
+              {language === 'en' ? '🇺🇸' : '🇮🇩'}
             </span>
           )}
           <span className={style.text}>

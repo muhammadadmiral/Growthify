@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../../config/firebase';
-import { doc, getDoc, collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useDarkMode } from '../../contexts/DarkModeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -11,6 +11,7 @@ import StatsSummary from '../../components/dashboard/StatsSummary';
 import GoalProgress from '../../components/dashboard/GoalProgress';
 import HabitTracker from '../../components/dashboard/HabitTracker';
 import UpcomingActivities from '../../components/dashboard/UpcomingActivities';
+// We'll handle loading and error states directly in this component
 
 export default function Dashboard() {
   const [currentDate] = useState(new Date());
@@ -45,11 +46,10 @@ export default function Dashboard() {
               level: userData.level || 1
             });
 
-            // If we don't have real data yet, create some mock data for demonstration
-            await fetchOrCreateMockData(authUser.uid, userData);
+            // Fetch or create sample data
+            await fetchDashboardData(authUser.uid, userData);
             
           } else {
-            // User document doesn't exist - this shouldn't normally happen with protected routes
             console.error('No user document found');
             navigate('/complete-profile');
           }
@@ -60,7 +60,6 @@ export default function Dashboard() {
           setIsLoading(false);
         }
       } else {
-        // No authenticated user
         navigate('/login');
       }
     });
@@ -68,129 +67,161 @@ export default function Dashboard() {
     return () => unsubscribe();
   }, [navigate]);
 
-  // Fetch or create mock data for demonstration
-  const fetchOrCreateMockData = async (userId, userData) => {
+  // Fetch dashboard data or use sample data if needed
+  const fetchDashboardData = async (userId, userData) => {
     try {
-      // Fetch goals
+      // Try to get goals data
+      const goalsData = await fetchGoals(userId);
+      setGoals(goalsData);
+
+      // Try to get habits data
+      const habitsData = await fetchHabits(userId);
+      setHabits(habitsData);
+
+      // Try to get activities data
+      const activitiesData = await fetchActivities(userId);
+      setActivities(activitiesData);
+
+      // Calculate stats
+      const calculatedStats = calculateStats(userData);
+      setStats(calculatedStats);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      setError('Failed to load dashboard components. Please try again later.');
+    }
+  };
+
+  // Fetch goals or return sample data
+  const fetchGoals = async (userId) => {
+    try {
       const goalsRef = collection(db, 'users', userId, 'goals');
       const goalsSnapshot = await getDocs(goalsRef);
-      let fetchedGoals = goalsSnapshot.docs.map(doc => ({
+      const fetchedGoals = goalsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
       
-      // If no goals exist, we'll use mock data
-      if (fetchedGoals.length === 0) {
-        fetchedGoals = [
-          {
-            id: 'goal1',
-            name: 'Lose 5kg',
-            category: 'body',
-            dueDate: new Date(currentDate.getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(),
-            progress: 35
-          },
-          {
-            id: 'goal2',
-            name: 'Meditate Daily',
-            category: 'mindset',
-            dueDate: new Date(currentDate.getTime() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString(),
-            progress: 60
-          },
-          {
-            id: 'goal3',
-            name: 'Run 5km',
-            category: 'fitness',
-            dueDate: new Date(currentDate.getTime() + 45 * 24 * 60 * 60 * 1000).toLocaleDateString(),
-            progress: 20
-          }
-        ];
+      if (fetchedGoals.length > 0) {
+        return fetchedGoals;
       }
-      setGoals(fetchedGoals);
+      
+      // Return sample data if no goals found
+      return [
+        {
+          id: 'goal1',
+          name: 'Lose 5kg',
+          category: 'body',
+          dueDate: new Date(currentDate.getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+          progress: 35
+        },
+        {
+          id: 'goal2',
+          name: 'Meditate Daily',
+          category: 'mindset',
+          dueDate: new Date(currentDate.getTime() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+          progress: 60
+        },
+        {
+          id: 'goal3',
+          name: 'Run 5km',
+          category: 'fitness',
+          dueDate: new Date(currentDate.getTime() + 45 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+          progress: 20
+        }
+      ];
+    } catch (error) {
+      console.error('Error fetching goals:', error);
+      return [];
+    }
+  };
 
-      // Fetch habits
+  // Fetch habits or return sample data
+  const fetchHabits = async (userId) => {
+    try {
       const habitsRef = collection(db, 'users', userId, 'habits');
       const habitsSnapshot = await getDocs(habitsRef);
-      let fetchedHabits = habitsSnapshot.docs.map(doc => ({
+      const fetchedHabits = habitsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
       
-      // If no habits exist, we'll use mock data
-      if (fetchedHabits.length === 0) {
-        fetchedHabits = [
-          {
-            id: 'habit1',
-            name: 'Morning Exercise',
-            time: '06:30 AM',
-            completed: false,
-            streak: 5
-          },
-          {
-            id: 'habit2',
-            name: 'Drink 2L Water',
-            time: 'Throughout day',
-            completed: true,
-            streak: 12
-          },
-          {
-            id: 'habit3',
-            name: 'Read 30 minutes',
-            time: '09:00 PM',
-            completed: false,
-            streak: 8
-          }
-        ];
+      if (fetchedHabits.length > 0) {
+        return fetchedHabits;
       }
-      setHabits(fetchedHabits);
+      
+      // Return sample data if no habits found
+      return [
+        {
+          id: 'habit1',
+          name: 'Morning Exercise',
+          time: '06:30 AM',
+          completed: false,
+          streak: 5
+        },
+        {
+          id: 'habit2',
+          name: 'Drink 2L Water',
+          time: 'Throughout day',
+          completed: true,
+          streak: 12
+        },
+        {
+          id: 'habit3',
+          name: 'Read 30 minutes',
+          time: '09:00 PM',
+          completed: false,
+          streak: 8
+        }
+      ];
+    } catch (error) {
+      console.error('Error fetching habits:', error);
+      return [];
+    }
+  };
 
-      // Fetch upcoming activities
+  // Fetch activities or return sample data
+  const fetchActivities = async (userId) => {
+    try {
       const activitiesRef = collection(db, 'users', userId, 'activities');
-      const activitiesQuery = query(
-        activitiesRef, 
-        where('completed', '==', false)
-      );
-      const activitiesSnapshot = await getDocs(activitiesQuery);
-      let fetchedActivities = activitiesSnapshot.docs.map(doc => ({
+      const activitiesSnapshot = await getDocs(activitiesRef);
+      const fetchedActivities = activitiesSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         datetime: doc.data().date ? new Date(doc.data().date.seconds * 1000).toLocaleString() : 'Upcoming'
       }));
       
-      // If no activities exist, we'll use mock data
-      if (fetchedActivities.length === 0) {
-        fetchedActivities = [
-          {
-            id: 'activity1',
-            title: 'Yoga Session',
-            category: 'fitness',
-            datetime: new Date(currentDate.getTime() + 1 * 24 * 60 * 60 * 1000).toLocaleString()
-          },
-          {
-            id: 'activity2',
-            title: 'Nutrition Workshop',
-            category: 'nutrition',
-            datetime: new Date(currentDate.getTime() + 3 * 24 * 60 * 60 * 1000).toLocaleString()
-          },
-          {
-            id: 'activity3',
-            title: 'Meditation Class',
-            category: 'mindset',
-            datetime: new Date(currentDate.getTime() + 5 * 24 * 60 * 60 * 1000).toLocaleString()
-          }
-        ];
+      if (fetchedActivities.length > 0) {
+        return fetchedActivities;
       }
-      setActivities(fetchedActivities);
-
-      // Calculate stats from user data or use placeholders
-      const calculatedStats = calculateStats(userData);
-      setStats(calculatedStats);
+      
+      // Return sample data if no activities found
+      return [
+        {
+          id: 'activity1',
+          title: 'Yoga Session',
+          category: 'fitness',
+          datetime: new Date(currentDate.getTime() + 1 * 24 * 60 * 60 * 1000).toLocaleString()
+        },
+        {
+          id: 'activity2',
+          title: 'Nutrition Workshop',
+          category: 'nutrition',
+          datetime: new Date(currentDate.getTime() + 3 * 24 * 60 * 60 * 1000).toLocaleString()
+        },
+        {
+          id: 'activity3',
+          title: 'Meditation Class',
+          category: 'mindset',
+          datetime: new Date(currentDate.getTime() + 5 * 24 * 60 * 60 * 1000).toLocaleString()
+        }
+      ];
     } catch (error) {
-      console.error('Error setting up dashboard data:', error);
-      setError('Failed to prepare dashboard data. Please try again later.');
+      console.error('Error fetching activities:', error);
+      return [];
     }
   };
 
-  // Function to calculate dashboard stats
+  // Calculate stats with translated labels
   const calculateStats = (userData) => {
     return [
       { 
@@ -258,12 +289,12 @@ export default function Dashboard() {
     );
   }
 
-  // No user data
+  // If no user data is available, don't render anything
   if (!user) {
     return null;
   }
 
-  // Success state - dashboard content
+  // Success state - render dashboard content
   return (
     <div className={`w-full p-6 ${isDarkMode ? 'bg-gray-900' : 'bg-neutral-50'}`}>
       <DashboardHeader user={user} currentDate={currentDate} />
