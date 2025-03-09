@@ -103,13 +103,13 @@ export default function CompleteProfile() {
     setIsLoading(true);
 
     try {
-      // Dapatkan user saat ini
+      // Get current authenticated user
       const currentUser = auth.currentUser;
       if (!currentUser) {
         throw new Error('No authenticated user');
       }
 
-      // Update dokumen di Firestore
+      // Update document in Firestore
       const userRef = doc(db, 'users', currentUser.uid);
       await updateDoc(userRef, {
         ...formData,
@@ -117,8 +117,14 @@ export default function CompleteProfile() {
         lastProfileUpdateAt: new Date()
       });
 
-      // Redirect ke dashboard
-      navigate('/dashboard');
+      // Log for debugging
+      console.log('Profile updated successfully');
+
+      // Redirect to dashboard
+      navigate('/dashboard', { 
+        replace: true,  // Replace current history entry
+        state: { fromProfileCompletion: true } // Optional: pass state
+      });
     } catch (error) {
       console.error('Error completing profile:', error);
       setErrors({

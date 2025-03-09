@@ -1,8 +1,9 @@
 // src/components/route/ProtectedRoute.jsx
 import { useState, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { auth } from '../config/firebase';
+import { auth, db } from '../config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 export default function ProtectedRoute({ children }) {
   const [authStatus, setAuthStatus] = useState({
@@ -16,26 +17,25 @@ export default function ProtectedRoute({ children }) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
-          // Create a function to check profile completion
-          const checkProfileCompletion = async (uid) => {
-            const response = await fetch(`/api/users/${uid}/profile-status`);
-            if (!response.ok) {
-              throw new Error('Failed to check profile status');
-            }
-            const data = await response.json();
-            return data.isComplete;
-          };
+          // Directly check Firestore for profile completion
+          const userRef = doc(db, 'users', user.uid);
+          const userSnap = await getDoc(userRef);
+
+          console.log('User Firestore Data:', userSnap.data()); // Debug log
+
+          const isProfileComplete = userSnap.exists() 
+            ? userSnap.data().profileCompleted === true 
+            : false;
           
-          // Use the function to check profile completion
-          const isProfileComplete = await checkProfileCompletion(user.uid);
-          
+          console.log('Profile Completed:', isProfileComplete); // Debug log
+
           setAuthStatus({
             isAuthenticated: true,
             isProfileCompleted: isProfileComplete,
             isLoading: false
           });
         } catch (error) {
-          console.error('Error checking profile:', error);
+          console.error('Error in ProtectedRoute:', error);
           setAuthStatus({
             isAuthenticated: true,
             isProfileCompleted: false,
@@ -54,7 +54,7 @@ export default function ProtectedRoute({ children }) {
     return () => unsubscribe();
   }, []);
 
-  // Show loading state while checking auth status
+  // Loading state
   if (authStatus.isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -63,16 +63,16 @@ export default function ProtectedRoute({ children }) {
     );
   }
 
-  // Redirect to login if not authenticated
+  // Not authenticated
   if (!authStatus.isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Redirect to complete profile if authenticated but profile not completed
+  // Profile not completed
   if (!authStatus.isProfileCompleted) {
     return <Navigate to="/complete-profile" state={{ from: location }} replace />;
   }
 
-  // If authenticated and profile is complete, render the children
+  // Authenticated and profile complete
   return children;
 }
