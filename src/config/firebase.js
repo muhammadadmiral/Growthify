@@ -524,40 +524,66 @@ const initiatePhoneAuth = async (phoneNumber, containerId = 'recaptcha-container
   }
 };
 
-export {
-  // Firebase services
-  app,
-  auth,
-  db,
-  storage,
+/**
+ * Get user profile data from Firestore
+ * @param {string} userId - The user ID to fetch profile for
+ * @returns {Promise<object|null>} - The user profile data or null if not found
+ */
+const getUserProfile = async (userId) => {
+  if (!userId) return null;
   
-  // Email/Password authentication
-  registerWithEmailAndPassword,
-  loginWithEmailAndPassword,
-  
-  // Social authentication
-  signInWithGoogle,
-  signInWithFacebook,
-  signInWithApple,
-  
-  // Phone authentication
-  initiatePhoneAuth,
-  initializeRecaptcha,
-  sendPhoneVerificationCode,
-  verifyPhoneCode,
-  
-  // Password reset
-  sendPasswordResetWithRedirect,
-  verifyPasswordResetCode,
-  confirmPasswordReset,
-  
-  // Utility functions
-  checkUserExists,
+  try {
+    const userDocRef = doc(db, 'users', userId);
+    const userDoc = await firestoreGetDoc(userDocRef);
+    
+    if (userDoc.exists()) {
+      return { id: userDoc.id, ...userDoc.data() };
+    } else {
+      console.log('No such user document!');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error getting user profile:', error);
+    return null;
+  }
+};
 
-   // Storage methods
-   getStorage,
-   ref,
-   uploadBytes,
-   getDownloadURL,
-   deleteObject
+// Then add getUserProfile to your exports list:
+export {
+ // Firebase services
+ app,
+ auth,
+ db,
+ storage,
+ 
+ // Email/Password authentication
+ registerWithEmailAndPassword,
+ loginWithEmailAndPassword,
+ 
+ // Social authentication
+ signInWithGoogle,
+ signInWithFacebook,
+ signInWithApple,
+ 
+ // Phone authentication
+ initiatePhoneAuth,
+ initializeRecaptcha,
+ sendPhoneVerificationCode,
+ verifyPhoneCode,
+ 
+ // Password reset
+ sendPasswordResetWithRedirect,
+ verifyPasswordResetCode,
+ confirmPasswordReset,
+ 
+ // Utility functions
+ checkUserExists,
+ getUserProfile, // Add this line
+
+ // Storage methods
+ getStorage,
+ ref,
+ uploadBytes,
+ getDownloadURL,
+ deleteObject
 };

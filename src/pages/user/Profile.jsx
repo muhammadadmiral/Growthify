@@ -383,12 +383,20 @@ export default function Profile() {
                   </div>
                 )}
                 
-                {user.goals && (
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Goals</h3>
-                    <p>{user.goals}</p>
-                  </div>
-                )}
+                <div>
+  {user.goals && typeof user.goals === 'object' ? (
+    <div>
+      {Object.entries(user.goals).map(([key, value]) => (
+        <p key={key}>
+          <strong>{key}:</strong> {value}
+        </p>
+      ))}
+    </div>
+  ) : (
+    <p>{String(user.goals || '')}</p>
+  )}
+</div>
+
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>

@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
+import { LanguageProvider } from './contexts/LanguageContext.jsx';
 
 // Import CSS in the correct order
 import './growthify-reset.css';  // Basic reset should be loaded first
@@ -60,13 +61,17 @@ class ErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
-
+// Fix main.jsx
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <LanguageProvider>
+ 
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+
+                </LanguageProvider>
     </ErrorBoundary>
   </React.StrictMode>
 );

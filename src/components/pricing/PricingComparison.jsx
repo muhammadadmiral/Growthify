@@ -352,11 +352,11 @@ const PricingComparison = ({ isDarkMode, language }) => {
                 <thead>
                   <tr>
                     <th className="py-4 px-6 text-left"></th>
-                    {t.plans.map((plan, index) => (
+                    {t.plans.map((plan, planIndex) => (
                       <th 
                         key={plan} 
                         className={`py-4 px-6 text-center ${
-                          index === 1 ? (isDarkMode ? 'text-primary-400' : 'text-primary-600') : ''
+                          planIndex === 1 ? (isDarkMode ? 'text-primary-400' : 'text-primary-600') : ''
                         }`}
                       >
                         <span className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-neutral-900'}`}>
@@ -406,7 +406,10 @@ const PricingComparison = ({ isDarkMode, language }) => {
                               <CheckIcon available={feature.starter} />
                             </div>
                           </td>
-                          <td className={`py-4 px-6 text-center ${index === 1 ? (isDarkMode ? 'bg-primary-900/10' : 'bg-primary-50/50') : ''}`}>
+                          <td className={`py-4 px-6 text-center ${
+                            // Fixed: Removed reference to undefined 'index' variable
+                            isDarkMode ? 'bg-primary-900/10' : 'bg-primary-50/50'
+                          }`}>
                             <div className="flex justify-center">
                               <CheckIcon available={feature.pro} />
                             </div>

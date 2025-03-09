@@ -17,18 +17,15 @@ import {
 
 import { useDarkMode } from '../../contexts/DarkModeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { useAuth } from '../../contexts/AuthContext';
-
+import { useAuth } from '../../hooks/useAuth';
 // Import components
 import SkinProfile from '../../components/skincare/SkinProfile';
 import SkincareRoutine from '../../components/skincare/SkincareRoutine';
-import ProductRecommendations from '../../components/skincare/ProductRecommendations';
+import ProductRecommendations from '../../components/skincare/ProductRecommendation';
 import ProductDetailsModal from '../../components/skincare/ProductDetailsModal';
 
 // Import services
 import { skincareService } from '../../components/skincare/skincareService';
-import { skincareProductMockData } from '../../components/skincare/skincareProductMockData';
-
 export default function Skincare() {
   const { isDarkMode } = useDarkMode();
   const { language } = useLanguage();

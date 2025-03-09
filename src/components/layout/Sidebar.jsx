@@ -529,7 +529,7 @@ export default function Sidebar({ isOpen, onClose }) {
       </motion.aside>
 
       {/* Add global style for gradient animation */}
-      <style jsx global>{`
+      <style jsx={true.toString()} global={true.toString()}>{`
         @keyframes gradientAnimation {
           0% { background-position: 0% 50% }
           50% { background-position: 100% 50% }

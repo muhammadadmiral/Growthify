@@ -906,9 +906,14 @@ export default function Settings() {
             <button className="text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium transition-colors">
               View Full Activity Log
             </button>
+            </div>
+            </div>
           </div>
+        </div>
+        </div>
+          )}
         </div>
       </div>
     </div>
-  </div>
-)}
+  );
+}
