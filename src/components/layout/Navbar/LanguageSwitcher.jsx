@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLanguage } from '../../contexts/LanguageContext';
-import { useDarkMode } from '../../contexts/DarkModeContext';
+import { useLanguage } from '../../../contexts/LanguageContext';
+import { useDarkMode } from '../../../contexts/DarkModeContext';
 
 export default function LanguageSwitcher({ variant = "default" }) {
   const { language, toggleLanguage, isChangingLanguage } = useLanguage();
