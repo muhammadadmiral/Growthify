@@ -4,9 +4,11 @@ import { auth, db } from '../../config/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { updateProfile as updateFirebaseProfile } from 'firebase/auth';
 import { useDarkMode } from '../../contexts/DarkModeContext';
+import ProfileImageModal from '../../components/profile/ProfileImageModal';
 
 export default function Profile() {
   const { isDarkMode } = useDarkMode();
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false); 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -151,25 +153,49 @@ export default function Profile() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Add Profile Image Modal */}
+      <ProfileImageModal 
+        isOpen={isImageModalOpen} 
+        onClose={() => setIsImageModalOpen(false)}
+        currentPhotoURL={user?.photoURL}
+        isDarkMode={isDarkMode}
+      />
+
       {/* Header section */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
         <div className="flex items-center mb-4 md:mb-0">
-          <div className="relative">
+          <div className="relative group">
             {user.photoURL ? (
               <img 
                 src={user.photoURL} 
                 alt={user.displayName} 
-                className="w-20 h-20 rounded-full object-cover border-2 border-primary-500"
+                onClick={() => setIsImageModalOpen(true)}
+                className="w-20 h-20 rounded-full object-cover border-2 border-primary-500 cursor-pointer group-hover:opacity-70 transition-opacity"
               />
             ) : (
-              <div className={`w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold ${isDarkMode ? 'bg-primary-700 text-white' : 'bg-primary-500 text-white'}`}>
+              <div 
+                onClick={() => setIsImageModalOpen(true)}
+                className={`w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold cursor-pointer group-hover:opacity-70 transition-opacity ${isDarkMode ? 'bg-primary-700 text-white' : 'bg-primary-500 text-white'}`}
+              >
                 {user.displayName.charAt(0).toUpperCase()}
               </div>
             )}
+            
+            {/* Edit overlay */}
+            <div 
+              className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300"
+              onClick={() => setIsImageModalOpen(true)}
+            >
+              <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="material-symbols-rounded">edit</span>
+              </span>
+            </div>
+
             <span className="absolute bottom-0 right-0 bg-green-500 p-1 rounded-full border-2 border-white">
               <span className="material-symbols-rounded text-white text-sm">verified</span>
             </span>
           </div>
+          
           <div className="ml-4">
             <h1 className="text-3xl font-bold">{user.displayName}</h1>
             <div className="flex items-center mt-1">
@@ -214,7 +240,6 @@ export default function Profile() {
           )}
         </div>
       </div>
-
       {/* Main content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left column - User info */}

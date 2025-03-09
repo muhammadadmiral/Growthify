@@ -33,7 +33,7 @@ const Communities = lazy(() => import('./pages/dashboard/Communities'));
 const NotFound = lazy(() => import('./pages/public/NotFound'));
 
 // Protected route component
-import ProtectedRoute from './route/ProtectedRoute'; // Corrected path
+import ProtectedRoute from './routes/Route'; // Corrected path
 
 function App() {
   const location = useLocation();
