@@ -4,9 +4,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useDarkMode } from '../../contexts/DarkModeContext';
-import { MoonIcon, SunIcon } from 'lucide-react';
+import { MoonIcon, SunIcon, MenuIcon, XIcon, ChevronDownIcon } from 'lucide-react';
 
-// Translation map with fixed widths to prevent layout shifts
+// Simple translations object
 const translations = {
   en: {
     features: 'Features',
@@ -15,10 +15,10 @@ const translations = {
     blog: 'Blog',
     login: 'Login',
     getStarted: 'Get Started',
-    profile: 'Your Profile',
+    profile: 'Profile',
     settings: 'Settings',
-    helpCenter: 'Help Center',
-    signOut: 'Sign out'
+    help: 'Help Center',
+    signOut: 'Sign Out'
   },
   id: {
     features: 'Fitur',
@@ -27,9 +27,9 @@ const translations = {
     blog: 'Blog',
     login: 'Masuk',
     getStarted: 'Mulai',
-    profile: 'Profil Anda',
+    profile: 'Profil',
     settings: 'Pengaturan',
-    helpCenter: 'Pusat Bantuan',
+    help: 'Pusat Bantuan',
     signOut: 'Keluar'
   }
 };
@@ -39,22 +39,15 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const { language, toggleLanguage, isChangingLanguage } = useLanguage();
+  const { language, toggleLanguage } = useLanguage();
   const { isDarkMode, toggleDarkMode } = useDarkMode();
 
   // Get translations based on current language
   const t = translations[language] || translations.en;
 
-  // Event listener for scroll
+  // Handle scroll effect
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -66,7 +59,6 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
         setIsDropdownOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isDropdownOpen]);
@@ -76,625 +68,433 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
-  // Prepare glossy background effect based on scroll and dark mode
-  const getGlassEffect = () => {
-    if (isDarkMode) {
-      return isScrolled
-        ? 'bg-gray-900/95 border-b border-gray-800/50 backdrop-blur-md'
-        : 'bg-transparent border-b border-transparent';
-    } else {
-      return isScrolled
-        ? 'bg-white/80 backdrop-blur-md border-b border-gray-200/20 shadow-sm'
-        : 'bg-transparent border-b border-transparent';
-    }
-  };
+  // Background styles based on scroll and dark mode
+  const navBackground = isDarkMode
+    ? isScrolled ? 'bg-gray-900/80 border-b border-primary-900/30' : 'bg-transparent'
+    : isScrolled ? 'bg-white/80 border-b border-primary-200/40 shadow-lg shadow-primary-500/5' : 'bg-transparent';
 
-  // Prepare text for animation to prevent layout shifts
-  // Ganti fungsi NavText dengan ini:
-const NavText = ({ children, className = '', width = 'auto' }) => {
-  return (
-    <div className="relative overflow-hidden" style={{ width, minWidth: width, height: '24px' }}>
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={language + (isChangingLanguage ? '-loading' : '')}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.25, ease: "easeInOut" }}
-          className={`${className} flex items-center justify-center`}
-          style={{ position: 'relative' }}
-        >
-          {isChangingLanguage ? (
-            <div className="w-full h-2 rounded-full overflow-hidden bg-gray-200/30">
-              <motion.div 
-                className="h-full bg-primary-500/40"
-                initial={{ width: "0%" }}
-                animate={{ width: "100%" }} 
-                transition={{ duration: 0.5 }}
-              />
-            </div>
-          ) : (
-            children
-          )}
-        </motion.div>
-      </AnimatePresence>
-    </div>
-  );
-};
+  // Consistent text colors across both modes
+  const navLinkColor = isDarkMode
+  ? 'text-primary-400 hover:text-primary-300'
+  : isScrolled 
+    ? 'text-primary-600 hover:text-primary-700' 
+    : 'text-primary-600 hover:text-primary-700'; 
+  // Logo background effect for dark/light mode  
+  const logoBgEffect = isDarkMode 
+    ? 'from-primary-700/20 via-secondary-700/20 to-primary-700/20'
+    : 'from-primary-500/20 via-secondary-500/20 to-primary-500/20';
 
-  // Nav links with consistent widths
+  // Active state background
+  const activeNavBg = isDarkMode
+    ? 'bg-primary-900/30'
+    : isScrolled ? 'bg-primary-50/70' : 'bg-white/20';
+
+  // Nav links data
   const navLinks = [
-    { key: 'features', label: t.features, path: '/features', width: '80px' },
-    { key: 'pricing', label: t.pricing, path: '/pricing', width: '75px' },
-    { key: 'testimonials', label: t.testimonials, path: '/testimonials', width: '120px' },
-    { key: 'blog', label: t.blog, path: '/blog', width: '60px' }
+    { name: t.features, path: '/features' },
+    { name: t.pricing, path: '/pricing' },
+    { name: t.testimonials, path: '/testimonials' },
+    { name: t.blog, path: '/blog' }
   ];
 
   return (
     <nav 
-      className={`
-        fixed top-0 left-0 right-0 w-full z-50 transition-all duration-500 ease-in-out
-        ${getGlassEffect()}
-      `}
+      className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-500 ease-in-out backdrop-blur-md ${navBackground}`}
       style={{
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
+        backgroundImage: isScrolled 
+          ? isDarkMode 
+            ? 'radial-gradient(circle at top right, rgba(49, 151, 149, 0.07), transparent 70%)' 
+            : 'radial-gradient(circle at top right, rgba(49, 151, 149, 0.05), transparent 70%)'
+          : 'none'
       }}
     >
+      {/* Top accent border with gradient */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary-600 via-secondary-500 to-primary-600"></div>
+      
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-20 items-center">
-          {/* Logo Section */}
-          <div className="flex items-center space-x-3">
-            {/* Mobile menu button */}
-            {isLoggedIn ? (
-              <button
+        <div className="flex justify-between h-16 sm:h-20 items-center">
+          {/* Left side with logo and menu button */}
+          <div className="flex items-center space-x-4">
+            {/* Dashboard menu button (only for logged in users) */}
+            {isLoggedIn && (
+              <motion.button
                 onClick={onMenuClick}
-                className={`
-                  lg:hidden inline-flex items-center justify-center p-2 rounded-full 
-                  transition-all duration-300 hover:scale-105
-                  ${isDarkMode
-                    ? 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                    : isScrolled 
-                      ? 'text-gray-600 hover:bg-gray-100/70' 
-                      : 'text-white hover:bg-white/10'
-                  }
-                `}
+                className={`lg:hidden relative p-2 rounded-lg text-primary-500 transition-all duration-300 hover:text-primary-400`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 aria-label="Open main menu"
               >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  className="h-6 w-6" 
-                  fill="none" 
-                  viewBox="0 0 24 24" 
-                  stroke="currentColor"
-                >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M4 6h16M4 12h16M4 18h16" 
-                  />
-                </svg>
-              </button>
-            ) : (
-              <button 
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className={`
-                  md:hidden inline-flex items-center justify-center p-2 rounded-full
-                  transition-all duration-300 hover:scale-105
-                  ${isDarkMode
-                    ? 'text-gray-300 hover:bg-gray-800 hover:text-white' 
-                    : isScrolled 
-                      ? 'text-gray-600 hover:bg-gray-100/70' 
-                      : 'text-white hover:bg-white/10'
-                  }
-                `}
-                aria-label="Toggle mobile menu"
-              >
-                {isMobileMenuOpen ? (
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                ) : (
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                )}
-              </button>
+                <span className={`absolute inset-0 rounded-lg opacity-0 hover:opacity-100 ${
+                  isDarkMode ? 'bg-primary-900/50' : 'bg-primary-50/70'
+                } transition-opacity duration-300`}></span>
+                <MenuIcon size={20} />
+              </motion.button>
             )}
             
-            {/* Logo */}
-            <Link to="/" className="flex-shrink-0 relative group">
-              <div className="absolute -inset-2 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-lg opacity-0 group-hover:opacity-20 blur transition duration-500"></div>
-              <div className="relative flex items-center py-1">
-                <div 
-                  className="font-heading font-bold text-2xl md:text-2xl"
-                  style={{
-                    backgroundImage: 'linear-gradient(90deg, #319795, #3182CE)',
-                    WebkitBackgroundClip: 'text',
-                    backgroundClip: 'text',
-                    color: 'transparent'
-                  }}
-                >
-                  Growthify
+            {/* Mobile menu button (for non-logged in users) */}
+            {!isLoggedIn && (
+              <motion.button 
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className={`md:hidden relative p-2 rounded-lg text-primary-500 transition-all duration-300 hover:text-primary-400`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                aria-label="Toggle mobile menu"
+              >
+                <span className={`absolute inset-0 rounded-lg opacity-0 hover:opacity-100 ${
+                  isDarkMode ? 'bg-primary-900/50' : 'bg-primary-50/70'
+                } transition-opacity duration-300`}></span>
+                {isMobileMenuOpen ? <XIcon size={20} /> : <MenuIcon size={20} />}
+              </motion.button>
+            )}
+            
+            {/* Logo with amazing effects */}
+            <Link to="/" className="flex-shrink-0 group relative">
+              <div className={`absolute -inset-4 rounded-2xl bg-gradient-to-r ${logoBgEffect} opacity-0 blur-xl group-hover:opacity-100 group-hover:duration-1000 duration-300 group-hover:animate-pulse-slow`}></div>
+              <div className="relative flex items-center">
+                <div className="relative">
+                  <div className="font-heading font-bold text-2xl md:text-3xl bg-gradient-to-r from-primary-500 via-secondary-400 to-primary-500 bg-clip-text text-transparent bg-size-200 bg-pos-0 group-hover:bg-pos-100 transition-all duration-500">
+                    Growthify
+                  </div>
+                  {/* Animated underline effect */}
+                  <div className="absolute left-0 bottom-0 w-full h-[2px] bg-gradient-to-r from-primary-500 via-secondary-400 to-primary-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
                 </div>
-                <div className={`absolute -bottom-px left-0 w-0 h-0.5 bg-gradient-to-r from-primary-500 to-secondary-500 transition-all duration-500 ${isScrolled ? 'w-full' : 'group-hover:w-full'}`}></div>
+                {/* Orbiting dot animation */}
+                <div className="absolute -right-1 -top-1 w-2 h-2 rounded-full bg-primary-500 opacity-0 group-hover:opacity-100 group-hover:animate-orbit transition-opacity duration-300"></div>
               </div>
             </Link>
           </div>
           
           {/* Navigation Links - Desktop */}
           {!isLoggedIn && (
-            <div className="hidden md:flex md:items-center md:space-x-2">
-              {navLinks.map((link) => (
-             <Link 
-             key={link.key} 
-             to={link.path} 
-             className={`
-               px-4 py-2 mx-1 rounded-lg relative group overflow-hidden
-               ${isDarkMode
-                 ? 'text-gray-200 hover:text-white' // Sebelumnya text-gray-300
-                 : isScrolled 
-                   ? 'text-gray-700 hover:text-primary-600' 
-                   : 'text-white hover:text-white'
-               }
-             `}
-           >
-                  {/* Background hover effect */}
-                  <span className={`
-                    absolute inset-0 w-full h-full transition-all duration-300 ease-out rounded-lg scale-0 group-hover:scale-100
-                    ${isDarkMode 
-                      ? 'bg-gray-800' 
-                      : isScrolled ? 'bg-gray-100/70' : 'bg-white/10'
-                    }
-                  `}></span>
-                  
-                  {/* Animated underline effect */}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary-500 to-secondary-500 group-hover:w-full transition-all duration-500"></span>
-                  
-                  {/* Text with smooth language transition */}
-                  <span className="relative">
-                    <NavText width={link.width}>{link.label}</NavText>
-                  </span>
-                </Link>
-              ))}
+            <div className="hidden md:flex md:items-center md:space-x-1">
+              {navLinks.map((link, index) => {
+                const isActive = location.pathname === link.path;
+                return (
+                  <Link 
+                    key={link.name} 
+                    to={link.path} 
+                    className={`px-4 py-2 mx-1 rounded-lg text-sm font-medium relative overflow-hidden transition-all duration-300 ${
+                      isActive 
+                        ? isDarkMode ? 'text-primary-300' : 'text-primary-600' 
+                        : navLinkColor
+                    }`}
+                  >
+                    {/* Dynamic highlight effect */}
+                    <span className={`absolute inset-0 rounded-lg -z-10 transition-opacity duration-300 
+                      ${isActive ? activeNavBg : 'opacity-0'}`}
+                    ></span>
+
+                    {/* Hover highlight */}
+                    <span className={`absolute inset-0 rounded-lg -z-10 opacity-0 hover:opacity-100 transition-opacity duration-300 ${
+                      isDarkMode ? 'bg-primary-900/50' : isScrolled ? 'bg-primary-50/70' : 'bg-white/20'
+                    }`}></span>
+                    
+                    {/* Text with dot indicator for active state */}
+                    <span className="relative flex items-center">
+                      {link.name}
+                      {isActive && (
+                        <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 rounded-full bg-primary-500"></span>
+                      )}
+                    </span>
+                    
+                    {/* Animated underline with gradient */}
+                    <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary-500/0 via-primary-500 to-primary-500/0 transform scale-x-0 hover:scale-x-100 transition-transform duration-300 ease-out"></span>
+                  </Link>
+                );
+              })}
             </div>
           )}
           
-          {/* Right Side Buttons */}
-          <div className="flex items-center space-x-3">
-            {/* Dark Mode Toggle */}
+          {/* Right Side */}
+          <div className="flex items-center space-x-4">
+            {/* Dark Mode Toggle with elegant effects */}
             <motion.button
               onClick={toggleDarkMode}
-              className={`
-                p-2 rounded-full relative overflow-hidden
-                transition-colors duration-500 ease-in-out
-                ${isDarkMode
-                  ? 'text-gray-300 hover:text-white bg-gray-800/50 hover:bg-gray-700/50'
-                  : isScrolled 
-                    ? 'text-gray-600 hover:text-primary-600 bg-gray-100/50 hover:bg-gray-200/50' 
-                    : 'text-white hover:text-white bg-white/10 hover:bg-white/20'
-                }
-              `}
+              className="p-2 rounded-lg relative overflow-hidden text-primary-500 hover:text-primary-400 transition-colors duration-300"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               aria-label="Toggle Dark Mode"
-              aria-pressed={isDarkMode}
             >
+              <span className={`absolute inset-0 rounded-lg opacity-0 hover:opacity-100 ${
+                isDarkMode ? 'bg-primary-900/50' : 'bg-primary-50/70'
+              } transition-opacity duration-300`}></span>
+              
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={isDarkMode ? 'dark' : 'light'}
                   initial={{ opacity: 0, rotate: -30, scale: 0.5 }}
                   animate={{ opacity: 1, rotate: 0, scale: 1 }}
                   exit={{ opacity: 0, rotate: 30, scale: 0.5 }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  transition={{ duration: 0.3 }}
                 >
-                  {isDarkMode ? (
-                    <SunIcon className="h-5 w-5" />
-                  ) : (
-                    <MoonIcon className="h-5 w-5" />
-                  )}
+                  {isDarkMode ? <SunIcon size={18} /> : <MoonIcon size={18} />}
                 </motion.div>
               </AnimatePresence>
-              
-              {/* Subtle glow effect */}
-              <span className={`absolute inset-0 rounded-full ${isDarkMode ? 'bg-primary-500' : 'bg-secondary-500'} opacity-0 transition-opacity duration-500 blur-md`}></span>
             </motion.button>
 
-            {/* Language Switcher - Luxury Version */}
-            <div className="relative">
-              <motion.button 
-                onClick={toggleLanguage}
-                disabled={isChangingLanguage}
-                className={`
-                  relative flex items-center justify-center h-10 px-3
-                  rounded-full transition-all duration-300 overflow-hidden
-                  ${isChangingLanguage ? 'opacity-80 cursor-wait' : 'opacity-100'}
-                  ${isDarkMode
-                    ? 'bg-gray-800/50 hover:bg-gray-700/50 text-gray-300'
-                    : isScrolled 
-                      ? 'bg-gray-100/50 hover:bg-gray-200/50 text-gray-700' 
-                      : 'bg-white/10 hover:bg-white/20 text-white'
-                  }
-                `}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                aria-label="Switch Language"
-              >
-                {/* Background animation */}
-                <span className={`
-                  absolute inset-0 transition-all duration-500 ease-out 
-                  ${isChangingLanguage ? 'opacity-20' : 'opacity-0'}
-                  ${isDarkMode ? 'bg-primary-800' : 'bg-primary-100'}
-                `}></span>
-                
-                {/* Flag and text container - fixed width to prevent layout shifts */}
-                <div className="relative flex items-center" style={{ width: '62px', justifyContent: 'flex-start' }}>
-                  {/* Flag with fallback */}
-                  <div className="w-5 h-5 mr-2 rounded-full overflow-hidden flex-shrink-0 relative">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={language}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        transition={{ duration: 0.25 }}
-                        className="absolute inset-0"
-                      >
-                        <div 
-                          className="w-full h-full flex items-center justify-center"
-                          style={{ 
-                            backgroundImage: language === 'en' 
-                              ? "url('/public/flags/us_flag.png')" 
-                              : "url('/public/flags/id_flag.png')",
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center'
-                          }}
-                        >
-                          {/* Fallback if image fails to load */}
-                          <span className="opacity-0">
-                            {language === 'en' ? '🇺🇸' : '🇮🇩'}
-                          </span>
-                        </div>
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
-                  
-        {/* Language text with animation */}
-<div className="relative overflow-hidden" style={{ width: '30px', minWidth: '30px', height: '20px' }}>
-  <AnimatePresence mode="wait">
-    <motion.div 
-      key={language}
-      className="flex items-center justify-start"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.2 }}
-      style={{ position: 'relative' }}
-    >
-      <span className="text-sm font-medium">
-        {language === 'en' ? 'EN' : 'ID'}
-      </span>
-    </motion.div>
-  </AnimatePresence>
-</div>
-                </div>
-                
-                {/* Loading indicator during language change */}
-                {isChangingLanguage && (
-                  <span className="absolute inset-0 flex items-center justify-center bg-gray-800/10 backdrop-blur-sm">
-                    <motion.span 
-                      className="w-4 h-4 rounded-full border-2 border-t-transparent"
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      style={{ 
-                        borderColor: isDarkMode 
-                          ? '#4FD1C5 transparent #4FD1C5 #4FD1C5' 
-                          : '#319795 transparent #319795 #319795'
-                      }}
-                    />
-                  </span>
-                )}
-              </motion.button>
-            </div>
+            {/* Language Switcher with hover effects */}
+            <motion.button 
+              onClick={toggleLanguage}
+              className="flex items-center space-x-2 p-2 rounded-lg relative overflow-hidden text-primary-500 hover:text-primary-400 transition-colors duration-300"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              aria-label="Switch Language"
+            >
+              <span className={`absolute inset-0 rounded-lg opacity-0 hover:opacity-100 ${
+                isDarkMode ? 'bg-primary-900/50' : 'bg-primary-50/70'
+              } transition-opacity duration-300`}></span>
+              
+              {/* Flag with glamorous effects */}
+              <div className="relative">
+                <motion.div 
+                  className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary-500 to-secondary-500 opacity-0 hover:opacity-100 blur-sm transition-opacity duration-300"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                ></motion.div>
+                <img 
+                  src={`/flags/${language === 'en' ? 'us-flag.png' : 'idn-flag.png'}`}
+                  alt={language === 'en' ? 'English' : 'Bahasa Indonesia'}
+                  className="w-5 h-5 rounded-full object-cover ring-1 ring-primary-500/30 relative"
+                />
+              </div>
+              <span className="text-sm font-medium">{language === 'en' ? 'EN' : 'ID'}</span>
+            </motion.button>
 
+            {/* User Menu for Logged In Users */}
             {isLoggedIn ? (
-              <>
-                {/* Notification bell */}
-                <button 
-                  className={`
-                    p-2 rounded-full transition-all duration-300
-                    ${isDarkMode
-                      ? 'text-gray-300 hover:bg-gray-800/70 hover:text-white' 
-                      : isScrolled 
-                        ? 'text-gray-600 hover:bg-gray-100/70 hover:text-primary-500' 
-                        : 'text-white hover:bg-white/10'
-                    }
-                    relative
-                  `}
-                  aria-label="Notifications"
+              <div className="relative user-dropdown">
+                <motion.button 
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center space-x-2 rounded-lg p-1.5 relative overflow-hidden text-primary-500 hover:text-primary-400 transition-colors duration-300"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  aria-expanded={isDropdownOpen}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                  </svg>
-                  <span className="absolute top-1.5 right-1.5 h-2.5 w-2.5 rounded-full bg-accent-500 ring-2 ring-white dark:ring-gray-800 animate-pulse"></span>
-                </button>
-                
-                {/* User profile dropdown */}
-                <div className="ml-2 relative user-dropdown">
-                  <button 
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-300 hover:scale-105"
-                    aria-expanded={isDropdownOpen}
-                    aria-haspopup="true"
-                  >
-                    <div 
-                      className="h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold shadow-md"
-                      style={{ 
-                        background: 'linear-gradient(135deg, #319795, #3182CE)' 
-                      }}
-                    >
+                  <span className={`absolute inset-0 rounded-lg opacity-0 hover:opacity-100 ${
+                    isDarkMode ? 'bg-primary-900/50' : 'bg-primary-50/70'
+                  } transition-opacity duration-300`}></span>
+                  
+                  {/* Avatar with premium effects */}
+                  <div className="relative group">
+                    <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-500 opacity-40 blur-sm group-hover:opacity-70 transition-opacity duration-300"></div>
+                    <div className="h-8 w-8 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br from-primary-500 to-secondary-500 shadow-md relative ring-2 ring-white/10 dark:ring-black/5">
                       AJ
                     </div>
-                  </button>
+                  </div>
                   
-                  {/* Dropdown menu */}
-                  <AnimatePresence>
-                    {isDropdownOpen && (
-                      <motion.div 
-                        className={`
-                          origin-top-right absolute right-0 mt-2 w-56 rounded-xl shadow-lg 
-                          ${isDarkMode 
-                            ? 'bg-gray-800 ring-1 ring-gray-700 border border-gray-700' 
-                            : 'bg-white ring-1 ring-black ring-opacity-5 border border-gray-100'
-                          }
-                          overflow-hidden z-10
-                        `}
-                        initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
-                      >
-                        <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                          <div className="px-4 py-3">
-                            <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Signed in as</p>
-                            <p className={`text-sm font-medium truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>alex.johnson@example.com</p>
+                  <div className="hidden sm:flex items-center text-primary-500 hover:text-primary-400">
+                    <span className="text-sm font-medium">Alex J</span>
+                    <ChevronDownIcon size={16} className="ml-1" />
+                  </div>
+                </motion.button>
+                
+                {/* User Dropdown Menu with elegant styling */}
+                <AnimatePresence>
+                  {isDropdownOpen && (
+                    <motion.div 
+                      className={`absolute right-0 mt-3 w-56 rounded-xl overflow-hidden z-10 ${
+                        isDarkMode 
+                          ? 'bg-gray-900/95 border border-primary-900/50 shadow-xl shadow-primary-900/20' 
+                          : 'bg-white/95 border border-primary-100/50 shadow-xl shadow-primary-500/10'
+                      }`}
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {/* Top accent border with gradient */}
+                      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary-600 via-secondary-500 to-primary-600"></div>
+                      
+                      {/* User Info */}
+                      <div className={`px-4 py-4 ${isDarkMode ? 'border-b border-gray-800' : 'border-b border-gray-100'}`}>
+                        <div className="flex items-center space-x-3">
+                          {/* Avatar with premium effects */}
+                          <div className="relative group">
+                            <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-500 opacity-40 blur-sm"></div>
+                            <div className="h-10 w-10 rounded-full flex items-center justify-center text-white font-medium bg-gradient-to-br from-primary-500 to-secondary-500 shadow-md relative">
+                              AJ
+                            </div>
                           </div>
-                          
-                          <div className="py-1" role="menu" aria-orientation="vertical">
-                            <Link to="/profile" 
-                              className={`
-                                flex items-center px-4 py-2 text-sm group transition-colors
-                                ${isDarkMode ? 'text-gray-300 hover:bg-gray-700 hover:text-white' : 'text-gray-700 hover:bg-gray-50 hover:text-primary-600'}
-                              `} 
-                              role="menuitem"
-                            >
-                              <svg className={`mr-3 h-5 w-5 ${isDarkMode ? 'text-gray-400 group-hover:text-gray-300' : 'text-gray-400 group-hover:text-primary-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                              </svg>
-                              <NavText width="85px">{t.profile}</NavText>
-                            </Link>
-                            
-                            <Link to="/settings" 
-                              className={`
-                                flex items-center px-4 py-2 text-sm group transition-colors
-                                ${isDarkMode ? 'text-gray-300 hover:bg-gray-700 hover:text-white' : 'text-gray-700 hover:bg-gray-50 hover:text-primary-600'}
-                              `} 
-                              role="menuitem"
-                            >
-                              <svg className={`mr-3 h-5 w-5 ${isDarkMode ? 'text-gray-400 group-hover:text-gray-300' : 'text-gray-400 group-hover:text-primary-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                              </svg>
-                              <NavText width="85px">{t.settings}</NavText>
-                            </Link>
-                            
-                            <Link to="/help" 
-                              className={`
-                                flex items-center px-4 py-2 text-sm group transition-colors
-                                ${isDarkMode ? 'text-gray-300 hover:bg-gray-700 hover:text-white' : 'text-gray-700 hover:bg-gray-50 hover:text-primary-600'}
-                              `} 
-                              role="menuitem"
-                            >
-                              <svg className={`mr-3 h-5 w-5 ${isDarkMode ? 'text-gray-400 group-hover:text-gray-300' : 'text-gray-400 group-hover:text-primary-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                              <NavText width="95px">{t.helpCenter}</NavText>
-                            </Link>
-                          </div>
-                          
-                          <div className="py-1">
-                            <button 
-                              className={`
-                                w-full text-left flex items-center px-4 py-2 text-sm group transition-colors
-                                ${isDarkMode ? 'text-gray-300 hover:bg-gray-700 hover:text-white' : 'text-gray-700 hover:bg-gray-50 hover:text-red-600'}
-                              `} 
-                              role="menuitem"
-                            >
-                              <svg className={`mr-3 h-5 w-5 ${isDarkMode ? 'text-gray-400 group-hover:text-gray-300' : 'text-gray-400 group-hover:text-red-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                              </svg>
-                              <NavText width="70px">{t.signOut}</NavText>
-                            </button>
+                          <div>
+                            <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Alex Johnson</p>
+                            <p className="text-xs text-primary-500">Premium Member</p>
                           </div>
                         </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </>
+                      </div>
+                      
+                      {/* Menu Items with hover effects */}
+                      <div className="py-2">
+                        <Link to="/profile" className={`flex items-center px-4 py-2 text-sm ${
+                          isDarkMode ? 'text-gray-300 hover:bg-primary-900/30 hover:text-primary-300' : 'text-gray-700 hover:bg-primary-50/70 hover:text-primary-600'
+                        } transition-colors duration-200`}>
+                          <svg className="h-4 w-4 mr-3 text-primary-500 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          {t.profile}
+                        </Link>
+                        
+                        <Link to="/settings" className={`flex items-center px-4 py-2 text-sm ${
+                          isDarkMode ? 'text-gray-300 hover:bg-primary-900/30 hover:text-primary-300' : 'text-gray-700 hover:bg-primary-50/70 hover:text-primary-600'
+                        } transition-colors duration-200`}>
+                          <svg className="h-4 w-4 mr-3 text-primary-500 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          {t.settings}
+                        </Link>
+                        
+                        <Link to="/help" className={`flex items-center px-4 py-2 text-sm ${
+                          isDarkMode ? 'text-gray-300 hover:bg-primary-900/30 hover:text-primary-300' : 'text-gray-700 hover:bg-primary-50/70 hover:text-primary-600'
+                        } transition-colors duration-200`}>
+                          <svg className="h-4 w-4 mr-3 text-primary-500 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {t.help}
+                        </Link>
+                      </div>
+                      
+                      {/* Sign Out Button with hover effect */}
+                      <div className={`py-2 ${isDarkMode ? 'border-t border-gray-800' : 'border-t border-gray-100'}`}>
+                        <button className={`w-full text-left flex items-center px-4 py-2 text-sm ${
+                          isDarkMode 
+                            ? 'text-gray-300 hover:bg-primary-900/30 hover:text-primary-300' 
+                            : 'text-gray-700 hover:bg-primary-50/70 hover:text-primary-600'
+                        } transition-colors duration-200`}>
+                          <svg className="h-4 w-4 mr-3 text-primary-500 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                          </svg>
+                          {t.signOut}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             ) : (
               <>
+                {/* Login Button with hover effects */}
                 <Link 
                   to="/login" 
-                  className={`
-                    hidden sm:flex px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300
-                    ${isDarkMode
-                      ? 'text-gray-300 hover:text-white hover:bg-gray-800' 
-                      : isScrolled 
-                        ? 'text-gray-700 hover:text-primary-600 hover:bg-gray-100/70' 
-                        : 'text-white hover:text-white hover:bg-white/10'
-                    }
-                    relative overflow-hidden group
-                  `}
+                  className="hidden sm:flex items-center px-4 py-2 text-sm font-medium rounded-lg relative overflow-hidden text-primary-500 hover:text-primary-400 transition-all duration-300"
                 >
-                  <span className="absolute inset-0 w-full h-full rounded-lg transition-all duration-300 opacity-0 group-hover:opacity-100 bg-gradient-to-r from-primary-500/10 to-secondary-500/10 blur"></span>
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary-500 to-secondary-500 group-hover:w-full transition-all duration-500"></span>
-                  <NavText width="60px">{t.login}</NavText>
+                  <span className={`absolute inset-0 rounded-lg opacity-0 hover:opacity-100 ${
+                    isDarkMode ? 'bg-primary-900/50' : 'bg-primary-50/70'
+                  } transition-opacity duration-300`}></span>
+                  <span className="relative">{t.login}</span>
                 </Link>
                 
+                {/* Get Started Button with premium effects */}
                 <Link 
-  to="/register" 
-  className={`
-    px-4 py-2 text-sm font-medium rounded-lg shadow-sm transition-all duration-300
-    ${isDarkMode
-      ? 'bg-primary-600 text-white hover:bg-primary-700 hover:shadow-lg hover:shadow-primary-500/20'
-      : isScrolled 
-        ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white hover:shadow-lg hover:shadow-primary-500/20' 
-        : 'bg-white text-primary-600 hover:bg-white/90 hover:shadow-lg hover:shadow-white/20'
-    }
-    relative overflow-hidden group
-  `}
->
-  {/* Animated gradient border */}
-  <span className="absolute inset-0 rounded-lg overflow-hidden">
-    <span className="absolute inset-0 rounded-lg border border-transparent group-hover:border-primary-300/30 dark:group-hover:border-primary-500/30 transition-all duration-300"></span>
-  </span>
-  
-  {/* Animated shine effect */}
-  <span className="absolute -inset-[100%] top-0 block transform -skew-x-12 group-hover:animate-shine bg-gradient-to-r from-transparent via-white/10 to-transparent transition-all duration-500"></span>
-  
-  {/* Text with fixed width to prevent layout shifts */}
-  <NavText width="100px">{t.getStarted}</NavText>
-</Link>
-
-{/* Mobile menu button - Only visible on small screens */}
-<button 
-  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-  className={`
-    sm:hidden p-2 rounded-full 
-    transition-all duration-300 hover:scale-105
-    ${isDarkMode
-      ? 'text-gray-300 hover:bg-gray-800 hover:text-white'
-      : isScrolled 
-        ? 'text-gray-600 hover:bg-gray-100/70' 
-        : 'text-white hover:bg-white/10'
-    }
-  `}
-  aria-label="Toggle mobile menu"
-  aria-expanded={isMobileMenuOpen}
->
-  <AnimatePresence mode="wait">
-    <motion.div
-      key={isMobileMenuOpen ? 'open' : 'closed'}
-      initial={{ opacity: 0, rotate: isMobileMenuOpen ? -90 : 90 }}
-      animate={{ opacity: 1, rotate: 0 }}
-      exit={{ opacity: 0, rotate: isMobileMenuOpen ? 90 : -90 }}
-      transition={{ duration: 0.2 }}
-    >
-      {isMobileMenuOpen ? (
-        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      ) : (
-        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      )}
-    </motion.div>
-  </AnimatePresence>
-</button>
-</>
-)}
-</div>
-</div>
-</div>
-
-{/* Mobile menu - Animated slide down */}
-<AnimatePresence>
-{!isLoggedIn && isMobileMenuOpen && (
-  <motion.div 
-    className={`md:hidden overflow-hidden ${
-      isDarkMode 
-        ? 'bg-gray-900/95 backdrop-blur-md border-t border-gray-800/30' 
-        : isScrolled 
-          ? 'bg-white/95 backdrop-blur-md border-t border-gray-200/30' 
-          : 'bg-gradient-to-r from-primary-900/95 to-secondary-900/95 backdrop-blur-md'
-    }`}
-    initial={{ height: 0, opacity: 0 }}
-    animate={{ height: 'auto', opacity: 1 }}
-    exit={{ height: 0, opacity: 0 }}
-    transition={{ duration: 0.3, ease: "easeInOut" }}
-  >
-    <div className="px-2 pt-2 pb-3 space-y-1">
-      {navLinks.map((link) => (
-        <Link 
-          key={link.key}
-          to={link.path} 
-          className={`
-            flex justify-center items-center px-3 py-3 text-base font-medium rounded-lg transition-colors duration-300
-            ${isDarkMode
-              ? 'text-gray-300 hover:bg-gray-800 hover:text-white'
-              : isScrolled 
-                ? 'text-gray-700 hover:bg-gray-100 hover:text-primary-600' 
-                : 'text-white hover:bg-white/10 hover:text-white'
-            }
-            relative group
-          `}
-          onClick={() => setIsMobileMenuOpen(false)}
-        >
-          {/* Animated underline */}
-          <span className="absolute bottom-0 left-1/4 right-1/4 w-1/2 h-0.5 bg-gradient-to-r from-primary-500 to-secondary-500 scale-0 group-hover:scale-100 transition-transform duration-300"></span>
-          
-          <NavText width={link.width}>{link.label}</NavText>
-        </Link>
-      ))}
-      
-      <Link 
-        to="/login" 
-        className={`
-          flex justify-center items-center px-3 py-3 text-base font-medium rounded-lg transition-colors duration-300
-          ${isDarkMode
-            ? 'text-gray-300 hover:bg-gray-800 hover:text-white'
-            : isScrolled 
-              ? 'text-gray-700 hover:bg-gray-100 hover:text-primary-600' 
-              : 'text-white hover:bg-white/10 hover:text-white'
-          }
-          relative group
-        `}
-        onClick={() => setIsMobileMenuOpen(false)}
-      >
-        {/* Animated underline */}
-        <span className="absolute bottom-0 left-1/4 right-1/4 w-1/2 h-0.5 bg-gradient-to-r from-primary-500 to-secondary-500 scale-0 group-hover:scale-100 transition-transform duration-300"></span>
-        
-        <NavText width="60px">{t.login}</NavText>
-      </Link>
-      
-      <div className="p-3">
-        <Link 
-          to="/register" 
-          className={`
-            flex justify-center items-center px-4 py-3 text-base font-medium rounded-lg shadow-sm transition-all duration-300 w-full
-            ${isDarkMode
-              ? 'bg-primary-600 text-white hover:bg-primary-700'
-              : isScrolled 
-                ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white' 
-                : 'bg-white text-primary-600 hover:bg-white/90'
-            }
-            relative overflow-hidden group
-          `}
-          onClick={() => setIsMobileMenuOpen(false)}
-        >
-          {/* Animated shine effect */}
-          <span className="absolute -inset-[100%] top-0 block transform -skew-x-12 group-hover:animate-shine bg-gradient-to-r from-transparent via-white/10 to-transparent"></span>
-          
-          <NavText width="110px">{t.getStarted}</NavText>
-        </Link>
+                  to="/register" 
+                  className="relative overflow-hidden group"
+                >
+                  {/* Animated glow effect */}
+                  <div className="absolute -inset-1 bg-gradient-to-r from-primary-600 via-secondary-500 to-primary-600 rounded-lg opacity-30 group-hover:opacity-60 blur-md group-hover:blur-lg transition-all duration-500 animate-gradient-shift"></div>
+                  
+                  {/* Button with hover and press effect */}
+                  <div className={`relative flex items-center px-4 py-2 text-sm font-medium rounded-lg ${
+                    isDarkMode
+                      ? 'bg-primary-700 text-white hover:bg-primary-600 hover:shadow-lg hover:shadow-primary-700/30' 
+                      : 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white hover:shadow-lg hover:shadow-primary-500/30'
+                  } transition-all duration-300 group-hover:translate-y-[1px]`}>
+                    {/* Subtle inner shimmer effect */}
+                    <span className="absolute inset-0 rounded-lg overflow-hidden">
+                      <span className="absolute -inset-[100%] top-0 block transform -skew-x-12 bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:animate-shine"></span>
+                    </span>
+                    <span className="relative">{t.getStarted}</span>
+                  </div>
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
-  </motion.div>
-)}
-</AnimatePresence>
-</nav>
-);
+
+      {/* Mobile menu - Animated slide down with premium styling */}
+      <AnimatePresence>
+        {!isLoggedIn && isMobileMenuOpen && (
+          <motion.div 
+            className={`md:hidden ${
+              isDarkMode 
+                ? 'bg-gray-900/95 border-b border-primary-900/30' 
+                : 'bg-white/95 border-b border-primary-100/30'
+            } shadow-xl`}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              {navLinks.map((link, index) => {
+                const isActive = location.pathname === link.path;
+                return (
+                  <Link 
+                    key={link.name}
+                    to={link.path} 
+                    className={`block px-4 py-3 rounded-lg text-base font-medium relative ${
+                      isActive
+                        ? 'text-primary-500'
+                        : 'text-primary-600 hover:text-primary-500'
+                    } transition-colors duration-200`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <span className={`absolute inset-0 rounded-lg -z-10 ${
+                      isActive
+                        ? isDarkMode ? 'bg-primary-900/30' : 'bg-primary-50/70'
+                        : 'opacity-0 hover:opacity-100 transition-opacity duration-300'
+                    } ${isDarkMode ? 'hover:bg-primary-900/30' : 'hover:bg-primary-50/70'}`}></span>
+                    <div className="flex items-center">
+                      <span>{link.name}</span>
+                      {isActive && (
+                        <span className="ml-2 w-1.5 h-1.5 rounded-full bg-primary-500"></span>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
+              
+              <Link 
+  to="/login" 
+  className={`hidden sm:flex items-center px-4 py-2 text-sm font-medium rounded-lg relative overflow-hidden ${
+    isDarkMode 
+      ? 'text-primary-400 hover:text-primary-300' 
+      : 'text-primary-600 hover:text-primary-700'
+  } transition-all duration-300`}
+>
+  <span className={`absolute inset-0 rounded-lg opacity-0 hover:opacity-100 ${
+    isDarkMode ? 'bg-primary-900/50' : 'bg-primary-50/70'
+  } transition-opacity duration-300`}></span>
+  <span className="relative">{t.login}</span>
+</Link>
+              
+              {/* CTA Button for Mobile */}
+              <div className="p-2">
+                <Link 
+                  to="/register"
+                  className="relative block overflow-hidden group"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {/* Animated glow effect */}
+                  <div className="absolute -inset-1 bg-gradient-to-r from-primary-600 via-secondary-500 to-primary-600 rounded-lg opacity-30 group-hover:opacity-60 blur-md group-hover:blur-lg transition-all duration-500 animate-gradient-shift"></div>
+                  
+                  {/* Button with hover and press effect */}
+                  <div className={`relative flex justify-center items-center px-4 py-3 text-base font-medium rounded-lg ${
+                    isDarkMode
+                      ? 'bg-primary-700 text-white hover:bg-primary-600' 
+                      : 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white'
+                  } transition-all duration-300 group-hover:translate-y-[1px]`}>
+                    {/* Subtle inner shimmer effect */}
+                    <span className="absolute inset-0 rounded-lg overflow-hidden">
+                      <span className="absolute -inset-[100%] top-0 block transform -skew-x-12 bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:animate-shine"></span>
+                    </span>
+                    <span className="relative">{t.getStarted}</span>
+                    </div>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </nav>
+  );
 }
