@@ -4,15 +4,19 @@ import { useLocation } from 'react-router-dom';
 import { auth, db } from '../../config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { useDarkMode } from '../../../contexts/DarkModeContext';
-import { useLanguage } from '../../../contexts/LanguageContext';
+import { useDarkMode } from '../../contexts/DarkModeContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
-import Logo from './Logo';
-import DarkModeToggle from './DarkModeToggle';
-import DesktopNav from './DesktopNav';
-import UserMenu from './UserMenu';
-import MobileMenu from './MobileMenu';
-import AuthButtons from './AuthButtons';
+import AuthButtons from './Navbar/AuthButtons';
+import DarkModeToggle from './Navbar/DarkModeToggle';
+import DesktopNav from './Navbar/DesktopNav';
+import LanguageSwitcher from './Navbar/LanguageSwitcher';
+import Logo from './Navbar/Logo';
+import MobileMenu from './Navbar/MobileMenu';
+import UserMenu from './Navbar/UserMenu';
+
+
+
 
 // Simple translations object
 const translations = {
