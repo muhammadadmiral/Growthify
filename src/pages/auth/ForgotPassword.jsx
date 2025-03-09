@@ -1,11 +1,11 @@
 // src/pages/ForgotPassword.jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { sendPasswordResetWithRedirect } from '../config/firebase';
-import InputForm from '../components/login/InputForm';
-import SubmitButton from '../components/login/SubmitButton';
-import { useDarkMode } from '../contexts/DarkModeContext';
-import { useTranslations } from '../hooks/useTranslations';
+import { sendPasswordResetWithRedirect } from '../../config/firebase';
+import InputForm from '../../components/login/InputForm';
+import SubmitButton from '../../components/login/SubmitButton';
+import { useDarkMode } from '../../contexts/DarkModeContext';
+import { useTranslations } from '../../hooks/useTranslations';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');

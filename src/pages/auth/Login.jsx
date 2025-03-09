@@ -1,13 +1,13 @@
 // src/pages/Login.jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { loginWithEmailAndPassword } from '../config/firebase';
-import InputForm from '../components/login/InputForm';
-import SubmitButton from '../components/login/SubmitButton';
-import SocialLogin from '../components/login/SocialLogin';
-import PhoneAuthModal from '../components/login/PhoneAuthModal';
-import { useDarkMode } from '../contexts/DarkModeContext';
-import { useTranslations } from '../hooks/useTranslations';
+import { loginWithEmailAndPassword } from '../../config/firebase';
+import InputForm from '../../components/login/InputForm';
+import SubmitButton from '../../components/login/SubmitButton';
+import SocialLogin from '../../components/login/SocialLogin';
+import PhoneAuthModal from '../../components/login/PhoneAuthModal';
+import { useDarkMode } from '../../contexts/DarkModeContext';
+import { useTranslations } from '../../hooks/useTranslations';
 
 export default function Login() {
   const [formData, setFormData] = useState({

@@ -1,14 +1,16 @@
 // src/components/route/ProtectedRoute.jsx
 import { useState, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { auth, db } from '../config/firebase';
+import { auth, db } from '../../config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
+import LoadingFallback from '../common/LoadingFallback';
 
-export default function ProtectedRoute({ children }) {
+export default function ProtectedRoute({ children, requireAdmin = false }) {
   const [authStatus, setAuthStatus] = useState({
     isAuthenticated: false,
     isProfileCompleted: false,
+    isAdmin: false,
     isLoading: true
   });
   const location = useLocation();
@@ -17,35 +19,42 @@ export default function ProtectedRoute({ children }) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
-          // Directly check Firestore for profile completion
+          // Check Firestore for user data including profile completion and admin status
           const userRef = doc(db, 'users', user.uid);
           const userSnap = await getDoc(userRef);
 
-          console.log('User Firestore Data:', userSnap.data()); // Debug log
-
-          const isProfileComplete = userSnap.exists() 
-            ? userSnap.data().profileCompleted === true 
-            : false;
-          
-          console.log('Profile Completed:', isProfileComplete); // Debug log
-
-          setAuthStatus({
-            isAuthenticated: true,
-            isProfileCompleted: isProfileComplete,
-            isLoading: false
-          });
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+            setAuthStatus({
+              isAuthenticated: true,
+              isProfileCompleted: userData.profileCompleted === true,
+              isAdmin: userData.role === 'admin',
+              isLoading: false
+            });
+          } else {
+            // User exists in auth but not in Firestore
+            setAuthStatus({
+              isAuthenticated: true,
+              isProfileCompleted: false,
+              isAdmin: false,
+              isLoading: false
+            });
+          }
         } catch (error) {
           console.error('Error in ProtectedRoute:', error);
           setAuthStatus({
             isAuthenticated: true,
             isProfileCompleted: false,
+            isAdmin: false,
             isLoading: false
           });
         }
       } else {
+        // No authenticated user
         setAuthStatus({
           isAuthenticated: false,
           isProfileCompleted: false,
+          isAdmin: false,
           isLoading: false
         });
       }
@@ -56,21 +65,22 @@ export default function ProtectedRoute({ children }) {
 
   // Loading state
   if (authStatus.isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary-500"></div>
-      </div>
-    );
+    return <LoadingFallback />;
   }
 
   // Not authenticated
   if (!authStatus.isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
   // Profile not completed
   if (!authStatus.isProfileCompleted) {
-    return <Navigate to="/complete-profile" state={{ from: location }} replace />;
+    return <Navigate to="/complete-profile" state={{ from: location.pathname }} replace />;
+  }
+
+  // Admin check if required
+  if (requireAdmin && !authStatus.isAdmin) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   // Authenticated and profile complete

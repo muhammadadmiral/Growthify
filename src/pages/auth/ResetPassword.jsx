@@ -1,8 +1,8 @@
 // src/pages/ResetPassword.jsx
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { verifyPasswordResetCode, confirmPasswordReset } from '../config/firebase';
-import { useDarkMode } from '../contexts/DarkModeContext';
+import { verifyPasswordResetCode, confirmPasswordReset } from '../../config/firebase';
+import { useDarkMode } from '../../contexts/DarkModeContext';
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('');

@@ -1,6 +1,6 @@
 // src/pages/Features.jsx
 import React from 'react';
-import FeatureCard from '../components/Home/FeatureCard';
+import FeatureCard from '../../components/Home/FeatureCard';
 
 export default function Features() {
   // Daftar fitur; bisa ditambahkan atau dimodifikasi sesuai kebutuhan

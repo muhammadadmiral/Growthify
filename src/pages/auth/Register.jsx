@@ -1,10 +1,10 @@
 // src/pages/Register.jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { registerWithEmailAndPassword } from '../config/firebase';
-import InputForm from '../components/login/InputForm';
-import SubmitButton from '../components/login/SubmitButton';
-import SocialLogin from '../components/login/SocialLogin';
+import { registerWithEmailAndPassword } from '../../config/firebase';
+import InputForm from '../../components/login/InputForm';
+import SubmitButton from '../../components/login/SubmitButton';
+import SocialLogin from '../../components/login/SocialLogin';
 
 export default function Register() {
   const [formData, setFormData] = useState({

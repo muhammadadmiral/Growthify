@@ -1,15 +1,15 @@
 // src/pages/Dashboard.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, db } from '../config/firebase';
+import { auth, db } from '../../config/firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
-import DashboardHeader from '../components/Dashboard/DashboardHeader';
-import StatsSummary from '../components/Dashboard/StatsSummary';
-import GoalProgress from '../components/Dashboard/GoalProgress';
-import HabitTracker from '../components/Dashboard/HabitTracker';
-import UpcomingActivities from '../components/Dashboard/UpcomingActivities';
+import DashboardHeader from '../../components/Dashboard/DashboardHeader';
+import StatsSummary from '../../components/Dashboard/StatsSummary';
+import GoalProgress from '../../components/Dashboard/GoalProgress';
+import HabitTracker from '../../components/Dashboard/HabitTracker';
+import UpcomingActivities from '../../components/Dashboard/UpcomingActivities';
 
 export default function Dashboard() {
   const [currentDate] = useState(new Date());

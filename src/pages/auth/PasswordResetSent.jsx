@@ -1,7 +1,7 @@
 // src/pages/PasswordResetSent.jsx
 import { useState, useEffect } from 'react';
 import { Link, useLocation, Navigate } from 'react-router-dom';
-import { useDarkMode } from '../contexts/DarkModeContext';
+import { useDarkMode } from '../../contexts/DarkModeContext';
 
 export default function PasswordResetSent() {
   const location = useLocation();

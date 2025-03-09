@@ -1,7 +1,7 @@
 // src/pages/EmailVerification.jsx
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { auth } from '../config/firebase';
+import { auth } from '../../config/firebase';
 import { 
   sendEmailVerification, 
   reload, 

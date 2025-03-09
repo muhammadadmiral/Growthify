@@ -2,9 +2,9 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { db, auth, updateUserProfile, uploadProfileImage } from '../config/firebase';
+import { db, auth, updateUserProfile, uploadProfileImage } from '../../config/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
-import { useDarkMode } from '../contexts/DarkModeContext';
+import { useDarkMode } from '../../contexts/DarkModeContext';
 
 export default function CompleteProfile() {
   const location = useLocation();
@@ -735,4 +735,113 @@ export default function CompleteProfile() {
                 <option value="morning_routine">Build a Morning Routine</option>
                 <option value="break_bad_habit">Break a Bad Habit</option>
                 <option value="consistent_exercise">Exercise Consistently</option>
-                <option value="
+                <option value="healthy_eating">Develop Healthy Eating Habits</option>
+                <option value="digital_detox">Reduce Screen Time</option>
+                <option value="meditation">Daily Meditation Practice</option>
+              </select>
+            </div>
+          </motion.div>
+        );
+      
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-neutral-50'} py-12`}>
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h2 className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-neutral-900'}`}>
+            Complete Your Profile
+          </h2>
+          <p className={`mt-2 ${isDarkMode ? 'text-gray-400' : 'text-neutral-600'}`}>
+            Let's set up your profile to personalize your growth journey
+          </p>
+        </div>
+        
+        {/* Progress indicator */}
+        <div className="mb-8">
+          <div className="flex justify-between mb-2">
+            {STEPS.map((step, index) => (
+              <div 
+                key={step}
+                className={`text-xs font-medium ${
+                  index <= currentStep 
+                    ? isDarkMode ? 'text-primary-400' : 'text-primary-600' 
+                    : isDarkMode ? 'text-gray-500' : 'text-neutral-400'
+                }`}
+              >
+                {step.charAt(0).toUpperCase() + step.slice(1)}
+              </div>
+            ))}
+          </div>
+          <div className="h-2 bg-gray-200 rounded-full">
+            <div 
+              className={`h-full rounded-full ${isDarkMode ? 'bg-primary-600' : 'bg-primary-500'}`}
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+        </div>
+        
+        {/* Form container */}
+        <div className={`${isDarkMode ? 'bg-gray-800 shadow-xl' : 'bg-white shadow-elegant'} rounded-lg p-6 md:p-8`}>
+          {/* Overall form error */}
+          {errors.form && (
+            <div className={`mb-6 ${
+              isDarkMode ? 'bg-red-900/20 border-red-800 text-red-300' : 'bg-red-50 border-red-200 text-red-700'
+            } px-4 py-3 rounded-md text-sm border`}>
+              {errors.form}
+            </div>
+          )}
+          
+          {/* Step content */}
+          {renderStepContent()}
+          
+          {/* Navigation buttons */}
+          <div className="mt-8 flex justify-between">
+            <button
+              type="button"
+              onClick={handlePrevStep}
+              disabled={currentStep === 0 || isLoading}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                currentStep === 0 || isLoading
+                  ? isDarkMode ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-neutral-200 text-neutral-400 cursor-not-allowed'
+                  : isDarkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-50'
+              }`}
+            >
+              Previous
+            </button>
+            
+            <button
+              type="button"
+              onClick={handleNextStep}
+              disabled={isLoading}
+              className={`px-4 py-2 rounded-md text-sm font-medium text-white transition-colors ${
+                isLoading
+                  ? isDarkMode ? 'bg-primary-700' : 'bg-primary-400'
+                  : isDarkMode ? 'bg-primary-600 hover:bg-primary-700' : 'bg-primary-600 hover:bg-primary-700'
+              }`}
+            >
+              {isLoading ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Processing...
+                </span>
+              ) : currentStep === STEPS.length - 1 ? 'Complete Setup' : 'Next'}
+            </button>
+          </div>
+        </div>
+        
+        {/* Helper text */}
+        <p className={`mt-4 text-center text-xs ${isDarkMode ? 'text-gray-500' : 'text-neutral-500'}`}>
+          You can always update your profile information later in your account settings.
+        </p>
+      </div>
+    </div>
+  );
+}

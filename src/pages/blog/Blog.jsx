@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { useDarkMode } from '../contexts/DarkModeContext';
-import { useLanguage } from '../contexts/LanguageContext';
-import BlogPostCard from '../components/blog/BlogPostCard';
-import BlogFeatured from '../components/blog/BlogFeatured';
-import BlogCategories from '../components/blog/BlogCategories';
-import BlogNewsletter from '../components/blog/BlogNewsletter';
+import { useDarkMode } from '../../contexts/DarkModeContext';
+import { useLanguage } from '../../contexts/LanguageContext';
+import BlogPostCard from '../../components/blog/BlogPostCard';
+import BlogFeatured from '../../components/blog/BlogFeatured';
+import BlogCategories from '../../components/blog/BlogCategories';
+import BlogNewsletter from '../../components/blog/BlogNewsletter';
 
 // Translation content
 const translations = {

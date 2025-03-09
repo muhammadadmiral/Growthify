@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { useDarkMode } from '../contexts/DarkModeContext';
-import { useLanguage } from '../contexts/LanguageContext';
-import PricingCard from '../components/pricing/PricingCard';
-import PricingFAQ from '../components/pricing/PricingFAQ';
-import PricingComparison from '../components/pricing/PricingComparison';
+import { useDarkMode } from '../../contexts/DarkModeContext';
+import { useLanguage } from '../../contexts/LanguageContext';
+import PricingCard from '../../components/pricing/PricingCard';
+import PricingFAQ from '../../components/pricing/PricingFAQ';
+import PricingComparison from '../../components/pricing/PricingComparison';
 
 // Translation content
 const translations = {
