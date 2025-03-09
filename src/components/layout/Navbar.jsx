@@ -2,38 +2,15 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { MoonIcon, SunIcon } from 'lucide-react'; // Pastikan sudah diinstal
+import { useDarkMode } from '../../contexts/DarkModeContext';
+import { MoonIcon, SunIcon } from 'lucide-react';
 
 export default function Navbar({ onMenuClick, isLoggedIn = false }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const location = useLocation();
   const { language, toggleLanguage } = useLanguage();
-
-  // Toggle Dark Mode
-  const toggleDarkMode = () => {
-    const newDarkModeState = !isDarkMode;
-    setIsDarkMode(newDarkModeState);
-    
-    // Tambahkan logika untuk mengubah tema
-    if (newDarkModeState) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  };
-
-  // Cek tema saat komponen dimuat
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      setIsDarkMode(true);
-      document.documentElement.classList.add('dark');
-    }
-  }, []);
+  const { isDarkMode, toggleDarkMode } = useDarkMode();
 
   // Event listener for scroll
   useEffect(() => {
@@ -54,13 +31,17 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
       className={`
         fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 
         ${isScrolled 
-          ? 'bg-gradient-to-r from-primary-50 to-secondary-50 backdrop-blur-md shadow-lg' 
-          : 'bg-gradient-to-r from-primary-100/50 to-secondary-100/50 backdrop-blur-md'
+          ? isDarkMode 
+            ? 'bg-gradient-to-r from-gray-800 to-gray-900 shadow-lg'
+            : 'bg-gradient-to-r from-primary-50 to-secondary-50 backdrop-blur-md shadow-lg' 
+          : isDarkMode
+            ? 'bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-md'
+            : 'bg-gradient-to-r from-primary-100/50 to-secondary-100/50 backdrop-blur-md'
         }
       `}
       style={{
         WebkitBackdropFilter: 'blur(10px)',
-        borderBottom: 'none'
+        borderBottom: isDarkMode ? '1px solid rgba(255, 255, 255, 0.05)' : 'none'
       }}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -74,9 +55,11 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
                 className={`
                   lg:hidden inline-flex items-center justify-center p-2 rounded-md 
                   transition-colors duration-300
-                  ${isScrolled 
-                    ? 'text-gray-600 hover:bg-gray-100' 
-                    : 'text-primary-700 hover:bg-primary-100/20'
+                  ${isDarkMode
+                    ? 'text-gray-300 hover:bg-gray-700'
+                    : isScrolled 
+                      ? 'text-gray-600 hover:bg-gray-100' 
+                      : 'text-primary-700 hover:bg-primary-100/20'
                   }
                 `}
                 aria-label="Open menu"
@@ -103,7 +86,7 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
               <div 
                 className={`
                   font-heading font-bold text-xl md:text-2xl 
-                  ${!isScrolled ? 'text-primary-700' : 'text-gray-800'}
+                  ${!isScrolled && !isDarkMode ? 'text-primary-700' : ''}
                 `}
                 style={{
                   backgroundImage: 'linear-gradient(90deg, #319795, #3182CE)',
@@ -126,10 +109,12 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
                   to={`/${link.toLowerCase()}`} 
                   className={`
                     px-3 py-2 text-sm font-medium transition-all duration-300 
-                    rounded-lg hover:bg-primary-100/10 
-                    ${isScrolled 
-                      ? 'text-gray-700 hover:text-primary-600' 
-                      : 'text-primary-700 hover:text-primary-900'
+                    rounded-lg 
+                    ${isDarkMode
+                      ? 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      : isScrolled 
+                        ? 'text-gray-700 hover:text-primary-600 hover:bg-primary-100/10' 
+                        : 'text-primary-700 hover:text-primary-900 hover:bg-primary-100/10'
                     }
                   `}
                 >
@@ -146,15 +131,17 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
               onClick={toggleDarkMode}
               className={`
                 p-2 rounded-full transition-all duration-300 
-                hover:bg-primary-100/20
-                ${isScrolled 
-                  ? 'text-gray-600 hover:bg-gray-100' 
-                  : 'text-primary-700 hover:bg-primary-100/30'
+                ${isDarkMode
+                  ? 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  : isScrolled 
+                    ? 'text-gray-600 hover:bg-gray-100' 
+                    : 'text-primary-700 hover:bg-primary-100/30'
                 }
               `}
               whileHover={{ rotate: 180 }}
               whileTap={{ scale: 0.9 }}
               aria-label="Toggle Dark Mode"
+              aria-pressed={isDarkMode}
             >
               {isDarkMode ? (
                 <SunIcon className="h-5 w-5" />
@@ -169,10 +156,11 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
               className={`
                 relative flex items-center justify-center 
                 w-20 h-10 rounded-full transition-all duration-300
-                hover:bg-primary-100/10
-                ${isScrolled 
-                  ? 'text-gray-700 hover:bg-gray-100' 
-                  : 'text-primary-700 hover:bg-primary-100/20'
+                ${isDarkMode
+                  ? 'text-gray-300 hover:bg-gray-700'
+                  : isScrolled 
+                    ? 'text-gray-700 hover:bg-gray-100' 
+                    : 'text-primary-700 hover:bg-primary-100/20'
                 }
               `}
               whileHover={{ scale: 1.05 }}
@@ -192,6 +180,10 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
                     src={`/flags/${language === 'en' ? 'us_flag' : 'idn_flag'}.png`} 
                     alt={language === 'en' ? 'English' : 'Bahasa Indonesia'}
                     className="w-5 h-5 mr-2 rounded-full object-cover shadow-sm"
+                    onError={(e) => {
+                      // Fallback if image doesn't load
+                      e.target.style.display = 'none';
+                    }}
                   />
                   <span className="text-sm">
                     {language === 'en' ? 'EN' : 'ID'}
@@ -203,8 +195,12 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
             {isLoggedIn ? (
               <>
                 {/* Notification bell */}
-                <button className={`p-2 rounded-full hover:bg-primary-50 focus:outline-none relative ${
-                  isScrolled ? 'text-text-muted hover:text-primary-500' : 'text-text-light hover:text-white'
+                <button className={`p-2 rounded-full focus:outline-none relative ${
+                  isDarkMode 
+                    ? 'text-gray-300 hover:bg-gray-700 hover:text-white' 
+                    : isScrolled 
+                      ? 'text-text-muted hover:text-primary-500' 
+                      : 'text-text-light hover:text-white'
                 }`}
                         aria-label="Notifications">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -232,13 +228,13 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
                   
                   {/* Dropdown menu */}
                   {isDropdownOpen && (
-                    <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-content ring-1 ring-black ring-opacity-5">
+                    <div className={`origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg ${isDarkMode ? 'bg-gray-800 ring-gray-700' : 'bg-content ring-black ring-opacity-5'} ring-1`}>
                       <div className="py-1" role="menu" aria-orientation="vertical">
-                        <Link to="/profile" className="block px-4 py-2 text-sm text-text hover:bg-primary-50" role="menuitem">Your Profile</Link>
-                        <Link to="/settings" className="block px-4 py-2 text-sm text-text hover:bg-primary-50" role="menuitem">Settings</Link>
-                        <Link to="/help" className="block px-4 py-2 text-sm text-text hover:bg-primary-50" role="menuitem">Help Center</Link>
-                        <div className="border-t border-secondary-200 my-1"></div>
-                        <button className="block w-full text-left px-4 py-2 text-sm text-text hover:bg-primary-50" role="menuitem">Sign out</button>
+                        <Link to="/profile" className={`block px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-text hover:bg-primary-50'}`} role="menuitem">Your Profile</Link>
+                        <Link to="/settings" className={`block px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-text hover:bg-primary-50'}`} role="menuitem">Settings</Link>
+                        <Link to="/help" className={`block px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-text hover:bg-primary-50'}`} role="menuitem">Help Center</Link>
+                        <div className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-secondary-200'} my-1`}></div>
+                        <button className={`block w-full text-left px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-text hover:bg-primary-50'}`} role="menuitem">Sign out</button>
                       </div>
                     </div>
                   )}
@@ -247,15 +243,21 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
             ) : (
               <>
                 <Link to="/login" className={`px-4 py-2 text-sm font-medium transition-colors ${
-                  isScrolled ? 'text-primary-600 hover:text-primary-700' : 'text-text-light hover:text-white'
+                  isDarkMode 
+                    ? 'text-gray-300 hover:text-white' 
+                    : isScrolled 
+                      ? 'text-primary-600 hover:text-primary-700' 
+                      : 'text-text-light hover:text-white'
                 }`}>
                   Login
                 </Link>
                 <Link to="/register" 
                       className={`ml-4 px-4 py-2 text-sm font-medium rounded-lg shadow-sm transition-colors ${
-                        isScrolled 
-                          ? 'bg-primary-500 text-white hover:bg-primary-600' 
-                          : 'bg-transparent text-text-light border border-white hover:bg-white/10'
+                        isDarkMode
+                          ? 'bg-primary-600 text-white hover:bg-primary-700'
+                          : isScrolled 
+                            ? 'bg-primary-500 text-white hover:bg-primary-600' 
+                            : 'bg-transparent text-text-light border border-white hover:bg-white/10'
                       }`}>
                   Get Started
                 </Link>
@@ -267,33 +269,41 @@ export default function Navbar({ onMenuClick, isLoggedIn = false }) {
       
       {/* Mobile menu - when not logged in */}
       {!isLoggedIn && (
-        <div className={`md:hidden ${isScrolled ? 'bg-content' : 'bg-secondary-900 bg-opacity-90'}`}>
+        <div className={`md:hidden ${isDarkMode ? 'bg-gray-900' : isScrolled ? 'bg-content' : 'bg-secondary-900 bg-opacity-90'}`}>
           <div className="pt-2 pb-3 space-y-1">
             <Link to="/features" className={`block px-3 py-2 text-base font-medium ${
-              isScrolled 
-                ? 'text-text hover:text-primary-500 hover:bg-primary-50' 
-                : 'text-text-light hover:text-white hover:bg-secondary-800 hover:bg-opacity-70'
+              isDarkMode
+                ? 'text-gray-300 hover:text-white hover:bg-gray-700'
+                : isScrolled 
+                  ? 'text-text hover:text-primary-500 hover:bg-primary-50' 
+                  : 'text-text-light hover:text-white hover:bg-secondary-800 hover:bg-opacity-70'
             }`}>
               Features
             </Link>
             <Link to="/pricing" className={`block px-3 py-2 text-base font-medium ${
-              isScrolled 
-                ? 'text-text hover:text-primary-500 hover:bg-primary-50' 
-                : 'text-text-light hover:text-white hover:bg-secondary-800 hover:bg-opacity-70'
+              isDarkMode
+                ? 'text-gray-300 hover:text-white hover:bg-gray-700'
+                : isScrolled 
+                  ? 'text-text hover:text-primary-500 hover:bg-primary-50' 
+                  : 'text-text-light hover:text-white hover:bg-secondary-800 hover:bg-opacity-70'
             }`}>
               Pricing
             </Link>
             <Link to="/testimonials" className={`block px-3 py-2 text-base font-medium ${
-              isScrolled 
-                ? 'text-text hover:text-primary-500 hover:bg-primary-50' 
-                : 'text-text-light hover:text-white hover:bg-secondary-800 hover:bg-opacity-70'
+              isDarkMode
+                ? 'text-gray-300 hover:text-white hover:bg-gray-700'
+                : isScrolled 
+                  ? 'text-text hover:text-primary-500 hover:bg-primary-50' 
+                  : 'text-text-light hover:text-white hover:bg-secondary-800 hover:bg-opacity-70'
             }`}>
               Testimonials
             </Link>
             <Link to="/blog" className={`block px-3 py-2 text-base font-medium ${
-              isScrolled 
-                ? 'text-text hover:text-primary-500 hover:bg-primary-50' 
-                : 'text-text-light hover:text-white hover:bg-secondary-800 hover:bg-opacity-70'
+              isDarkMode
+                ? 'text-gray-300 hover:text-white hover:bg-gray-700'
+                : isScrolled 
+                  ? 'text-text hover:text-primary-500 hover:bg-primary-50' 
+                  : 'text-text-light hover:text-white hover:bg-secondary-800 hover:bg-opacity-70'
             }`}>
               Blog
             </Link>

@@ -1,4 +1,4 @@
-/* Modified index.css with new color scheme */
+/* Modified index.css with dark mode support */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
 
@@ -79,6 +79,58 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Dark mode variables */
+.dark {
+  --color-primary-50: #1D4044;
+  --color-primary-100: #234E52;
+  --color-primary-200: #285E61;
+  --color-primary-300: #2C7A7B;
+  --color-primary-400: #319795;
+  --color-primary-500: #38B2AC;
+  --color-primary-600: #4FD1C5;
+  --color-primary-700: #81E6D9;
+  --color-primary-800: #B2F5EA;
+  --color-primary-900: #E6FFFA;
+  
+  --color-secondary-50: #1A365D;
+  --color-secondary-100: #2A4365;
+  --color-secondary-200: #2C5282;
+  --color-secondary-300: #2B6CB0;
+  --color-secondary-400: #3182CE;
+  --color-secondary-500: #4299E1;
+  --color-secondary-600: #63B3ED;
+  --color-secondary-700: #90CDF4;
+  --color-secondary-800: #BEE3F8;
+  --color-secondary-900: #EBF8FF;
+  
+  --color-accent-50: #1C4532;
+  --color-accent-100: #22543D;
+  --color-accent-200: #276749;
+  --color-accent-300: #2F855A;
+  --color-accent-400: #38A169;
+  --color-accent-500: #48BB78;
+  --color-accent-600: #68D391;
+  --color-accent-700: #9AE6B4;
+  --color-accent-800: #C6F6D5;
+  --color-accent-900: #F0FFF4;
+  
+  --color-text-light: #F8FAFC;
+  --color-text: #E2E8F0;
+  --color-text-dark: #F1F5F9;
+  --color-text-muted: #94A3B8;
+  
+  --color-background-light: #0F172A;
+  --color-background: #111827;
+  --color-background-dark: #030712;
+  
+  --color-content-light: #1E293B;
+  --color-content: #1E293B;
+  --color-content-dark: #0F172A;
+
+  color: var(--color-text);
+  background-color: var(--color-background-dark);
+}
+
 /* Override style dasar */
 body {
   margin: 0;
@@ -88,6 +140,12 @@ body {
   display: block;
   background-color: var(--color-background);
   color: var(--color-text);
+}
+
+/* Dark mode body overrides */
+.dark body {
+  background-color: var(--color-background-dark);
+  color: var(--color-text-light);
 }
 
 /* Hapus center positioning yang menyebabkan masalah layout */
@@ -115,9 +173,21 @@ a:hover {
   color: var(--color-primary-600);
 }
 
+.dark a {
+  color: var(--color-primary-400);
+}
+
+.dark a:hover {
+  color: var(--color-primary-300);
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Poppins', sans-serif;
   color: var(--color-text-dark);
+}
+
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  color: var(--color-text-light);
 }
 
 h1 {
@@ -150,12 +220,26 @@ button:focus-visible {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
+.dark .card {
+  background-color: var(--color-content-dark);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.12);
+}
+
 .shadow-elegant {
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
+.dark .shadow-elegant {
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+}
+
 .bg-gradient-premium {
   background-image: linear-gradient(135deg, var(--color-primary-500), var(--color-secondary-500));
+}
+
+.dark .bg-gradient-premium {
+  background-image: linear-gradient(135deg, var(--color-primary-600), var(--color-secondary-600));
 }
 
 .gradient-text {
@@ -163,6 +247,128 @@ button:focus-visible {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+.dark .gradient-text {
+  background: linear-gradient(135deg, var(--color-primary-400), var(--color-secondary-400));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Dark mode form controls */
+.dark input, 
+.dark textarea, 
+.dark select {
+  background-color: var(--color-content-dark);
+  border-color: var(--color-secondary-800);
+  color: var(--color-text-light);
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: var(--color-primary-400);
+  box-shadow: 0 0 0 2px rgba(79, 209, 197, 0.2);
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Dark mode buttons */
+.dark .btn-primary {
+  background-color: var(--color-primary-500);
+  color: white;
+}
+
+.dark .btn-primary:hover {
+  background-color: var(--color-primary-600);
+}
+
+.dark .btn-secondary {
+  background-color: var(--color-content-dark);
+  color: var(--color-text-light);
+  border: 1px solid var(--color-secondary-700);
+}
+
+.dark .btn-secondary:hover {
+  background-color: var(--color-content-light);
+}
+
+/* Images and media in dark mode */
+.dark img {
+  filter: brightness(0.9);
+}
+
+/* Animation for dark mode transition */
+.transition-dark {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Notification and badge styles for dark mode */
+.dark .badge-primary {
+  background-color: var(--color-primary-900);
+  color: var(--color-primary-300);
+}
+
+.dark .badge-secondary {
+  background-color: var(--color-secondary-900);
+  color: var(--color-secondary-300);
+}
+
+.dark .badge-accent {
+  background-color: var(--color-accent-900);
+  color: var(--color-accent-300);
+}
+
+/* Code blocks and syntax highlighting for dark mode */
+.dark code {
+  background-color: var(--color-content-dark);
+  color: var(--color-primary-300);
+  border: 1px solid var(--color-content-light);
+}
+
+.dark pre {
+  background-color: var(--color-content-dark);
+  border: 1px solid var(--color-content-light);
+}
+
+/* Table styles for dark mode */
+.dark table {
+  border-color: var(--color-content-light);
+}
+
+.dark th {
+  background-color: var(--color-content-light);
+  color: var(--color-text-light);
+}
+
+.dark td {
+  border-color: var(--color-content-light);
+}
+
+.dark tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Modal and dialog styles for dark mode */
+.dark .modal, 
+.dark .dialog {
+  background-color: var(--color-content-dark);
+  border: 1px solid var(--color-content-light);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.dark .modal-header, 
+.dark .dialog-header {
+  border-bottom-color: var(--color-content-light);
+}
+
+.dark .modal-footer, 
+.dark .dialog-footer {
+  border-top-color: var(--color-content-light);
 }
 
 /* Dark mode preferences override */

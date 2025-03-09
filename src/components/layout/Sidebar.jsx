@@ -1,9 +1,11 @@
 // src/components/layout/Sidebar.jsx
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useDarkMode } from '../../contexts/DarkModeContext';
 
 export default function Sidebar({ isOpen, onClose }) {
   const location = useLocation();
+  const { isDarkMode } = useDarkMode();
   
   // Close sidebar when route changes on mobile screens
   useEffect(() => {
@@ -75,7 +77,7 @@ export default function Sidebar({ isOpen, onClose }) {
       {/* Overlay for mobile - only appears when sidebar is open */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-secondary-900 bg-opacity-30 backdrop-blur-sm z-20 lg:hidden"
+          className={`fixed inset-0 ${isDarkMode ? 'bg-black bg-opacity-50' : 'bg-secondary-900 bg-opacity-30'} backdrop-blur-sm z-20 lg:hidden`}
           onClick={onClose}
           aria-hidden="true"
         ></div>
@@ -83,13 +85,13 @@ export default function Sidebar({ isOpen, onClose }) {
       
       {/* Sidebar */}
       <aside 
-        className={`fixed top-0 left-0 h-full bg-content z-30 transition-all duration-300 ease-in-out shadow-elegant w-64 lg:w-64 lg:static lg:z-0 transform ${
+        className={`fixed top-0 left-0 h-full ${isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-content border-primary-100'} z-30 transition-all duration-300 ease-in-out shadow-elegant w-64 lg:w-64 lg:static lg:z-0 transform ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 border-r border-primary-100`}
+        } lg:translate-x-0 border-r`}
         aria-label="Sidebar"
       >
         {/* Logo area */}
-        <div className="h-16 flex items-center justify-center border-b border-primary-100">
+        <div className={`h-16 flex items-center justify-center ${isDarkMode ? 'border-gray-800' : 'border-primary-100'} border-b`}>
           <div className="font-heading font-bold text-2xl"
                style={{
                  backgroundImage: 'linear-gradient(90deg, #319795, #3182CE)',
@@ -103,7 +105,7 @@ export default function Sidebar({ isOpen, onClose }) {
           {/* Close button - only visible on mobile */}
           <button 
             onClick={onClose}
-            className="absolute right-4 top-3 lg:hidden text-text-muted hover:text-text-dark transition-colors"
+            className={`absolute right-4 top-3 lg:hidden ${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-text-muted hover:text-text-dark'} transition-colors`}
             aria-label="Close sidebar"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -113,7 +115,7 @@ export default function Sidebar({ isOpen, onClose }) {
         </div>
         
         {/* Menu items */}
-        <nav className="py-6 px-3 overflow-y-auto h-[calc(100%-10rem)]">
+        <nav className={`py-6 px-3 overflow-y-auto h-[calc(100%-10rem)]`}>
           <ul className="space-y-1">
             {menuItems.map((item) => {
               const isActive = location.pathname === item.path;
@@ -123,22 +125,30 @@ export default function Sidebar({ isOpen, onClose }) {
                     to={item.path}
                     className={`group flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                       isActive
-                        ? 'bg-primary-50 text-primary-600'
-                        : 'text-text hover:bg-secondary-50'
+                        ? isDarkMode 
+                          ? 'bg-primary-900/30 text-primary-400'
+                          : 'bg-primary-50 text-primary-600'
+                        : isDarkMode
+                          ? 'text-gray-300 hover:bg-gray-800'
+                          : 'text-text hover:bg-secondary-50'
                     }`}
                     aria-current={isActive ? 'page' : undefined}
                   >
                     <span className={`mr-3 ${
                       isActive 
-                        ? 'text-primary-500' 
-                        : 'text-text-muted group-hover:text-primary-400'
+                        ? isDarkMode
+                          ? 'text-primary-400'
+                          : 'text-primary-500' 
+                        : isDarkMode
+                          ? 'text-gray-500 group-hover:text-gray-400'
+                          : 'text-text-muted group-hover:text-primary-400'
                     }`}>
                       {item.icon}
                     </span>
                     {item.name}
                     
                     {isActive && (
-                      <span className="ml-auto w-1.5 h-6 rounded-full bg-primary-500"></span>
+                      <span className={`ml-auto w-1.5 h-6 rounded-full ${isDarkMode ? 'bg-primary-400' : 'bg-primary-500'}`}></span>
                     )}
                   </Link>
                 </li>
@@ -148,7 +158,7 @@ export default function Sidebar({ isOpen, onClose }) {
           
           {/* Premium feature section */}
           <div className="mt-10 mx-3">
-            <div className="rounded-xl p-5 text-white shadow-md relative overflow-hidden">
+            <div className={`rounded-xl p-5 ${isDarkMode ? 'text-gray-200' : 'text-white'} shadow-md relative overflow-hidden`}>
               {/* Background gradient */}
               <div 
                 style={{
@@ -157,7 +167,9 @@ export default function Sidebar({ isOpen, onClose }) {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  background: 'linear-gradient(135deg, #319795, #3182CE, #38A169)',
+                  background: isDarkMode 
+                    ? 'linear-gradient(135deg, #2C7A7B, #2B6CB0, #2F855A)'
+                    : 'linear-gradient(135deg, #319795, #3182CE, #38A169)',
                   zIndex: -1
                 }}
               ></div>
@@ -165,8 +177,8 @@ export default function Sidebar({ isOpen, onClose }) {
               <h3 className="font-bold text-lg mb-2">Unlock Premium</h3>
               <p className="text-sm opacity-90 mb-4">Access personalized coaching and exclusive content</p>
               <button 
-                className="w-full bg-white font-semibold py-2 px-3 rounded-lg text-sm hover:bg-opacity-90 transition-all"
-                style={{ color: '#319795' }}
+                className={`w-full ${isDarkMode ? 'bg-gray-800 text-white hover:bg-gray-700' : 'bg-white hover:bg-opacity-90'} font-semibold py-2 px-3 rounded-lg text-sm transition-all`}
+                style={{ color: isDarkMode ? '#fff' : '#319795' }}
               >
                 Upgrade Now
               </button>
@@ -175,7 +187,7 @@ export default function Sidebar({ isOpen, onClose }) {
         </nav>
         
         {/* User section at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-primary-100 bg-content">
+        <div className={`absolute bottom-0 left-0 right-0 p-4 border-t ${isDarkMode ? 'border-gray-800 bg-gray-900' : 'border-primary-100 bg-content'}`}>
           <div className="flex items-center">
             <div 
               className="h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold"
@@ -184,11 +196,11 @@ export default function Sidebar({ isOpen, onClose }) {
               AJ
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-text-dark">Alex Johnson</p>
-              <p className="text-xs text-text-muted">Free Plan</p>
+              <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-text-dark'}`}>Alex Johnson</p>
+              <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-text-muted'}`}>Free Plan</p>
             </div>
             <button 
-              className="ml-auto text-text-muted hover:text-text transition-colors"
+              className={`ml-auto ${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-text-muted hover:text-text'} transition-colors`}
               aria-label="Settings"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

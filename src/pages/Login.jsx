@@ -5,10 +5,11 @@ import {
   loginWithEmailAndPassword, 
   signInWithGoogle, 
   signInWithFacebook,
-
 } from '../config/firebase';
 import InputForm from '../components/login/InputForm';
 import SubmitButton from '../components/login/SubmitButton';
+import { useDarkMode } from '../contexts/DarkModeContext';
+import { useTranslations } from '../hooks/useTranslations';
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -19,6 +20,8 @@ export default function Login() {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { isDarkMode } = useDarkMode();
+  const { t } = useTranslations();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -40,15 +43,15 @@ export default function Login() {
     const newErrors = {};
     
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = t.auth.login.errors.emailRequired;
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email address is invalid';
+      newErrors.email = t.auth.login.errors.emailInvalid;
     }
     
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = t.auth.login.errors.passwordRequired;
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = t.auth.login.errors.passwordTooShort;
     }
     
     setErrors(newErrors);
@@ -66,37 +69,37 @@ export default function Login() {
     setIsLoading(true);
     
     try {
-      // Proses login dengan Firebase
+      // Process login with Firebase
       await loginWithEmailAndPassword(
         formData.email, 
         formData.password
       );
       
-      // Redirect ke dashboard setelah login berhasil
+      // Redirect to dashboard after successful login
       navigate('/dashboard');
     } catch (error) {
       console.error('Login failed:', error);
       
-      // Tangani error spesifik dari Firebase
+      // Handle specific errors from Firebase
       switch (error.code) {
         case 'auth/invalid-credential':
           setErrors({
-            form: 'Invalid email or password. Please try again.'
+            form: t.auth.login.errors.invalidCredentials
           });
           break;
         case 'auth/user-not-found':
           setErrors({
-            form: 'No account found with this email.'
+            form: t.auth.login.errors.userNotFound
           });
           break;
         case 'auth/wrong-password':
           setErrors({
-            form: 'Incorrect password. Please try again.'
+            form: t.auth.login.errors.wrongPassword
           });
           break;
         default:
           setErrors({
-            form: 'Login failed. Please try again.'
+            form: t.auth.login.errors.generic
           });
       }
     } finally {
@@ -104,7 +107,7 @@ export default function Login() {
     }
   };
 
-  // Handler untuk login sosial
+  // Handlers for social logins
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
@@ -135,60 +138,96 @@ export default function Login() {
     }
   };
 
-  
-
   return (
-    <div className="min-h-screen bg-neutral-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-neutral-50'} flex flex-col justify-center py-12 sm:px-6 lg:px-8`}>
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Link to="/">
           <h2 className="text-center text-3xl font-extrabold font-heading bg-gradient-to-r from-primary-500 to-secondary-500 text-transparent bg-clip-text">
             Growthify
           </h2>
         </Link>
-        <h2 className="mt-6 text-center text-2xl font-bold text-neutral-800">
-          Sign in to your account
+        <h2 className={`mt-6 text-center text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-neutral-800'}`}>
+          {t.auth.login.title}
         </h2>
-        <p className="mt-2 text-center text-sm text-neutral-600">
-          Or{' '}
-          <Link to="/register" className="font-medium text-primary-600 hover:text-primary-500">
-            start your growth journey today
+        <p className={`mt-2 text-center text-sm ${isDarkMode ? 'text-gray-400' : 'text-neutral-600'}`}>
+          {t.auth.login.noAccount}{' '}
+          <Link to="/register" className={`font-medium ${isDarkMode ? 'text-primary-400 hover:text-primary-300' : 'text-primary-600 hover:text-primary-500'}`}>
+            {t.auth.login.registerLink}
           </Link>
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-elegant sm:rounded-lg sm:px-10">
-          {/* Pesan error umum */}
+        <div className={`${isDarkMode ? 'bg-gray-800 shadow-xl' : 'bg-white shadow-elegant'} py-8 px-4 sm:rounded-lg sm:px-10`}>
+          {/* General error message */}
           {errors.form && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+            <div className={`mb-4 ${isDarkMode ? 'bg-red-900/20 border-red-800 text-red-300' : 'bg-red-50 border-red-200 text-red-700'} px-4 py-3 rounded-md text-sm border`}>
               {errors.form}
             </div>
           )}
           
           <form className="space-y-6" onSubmit={handleSubmit}>
-            <InputForm
-              label="Email address"
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={formData.email}
-              onChange={handleChange}
-              error={errors.email}
-            />
+            <div>
+              <label htmlFor="email" className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-neutral-700'}`}>
+                {t.auth.login.emailLabel}
+                <span className="text-accent-500 ml-1">*</span>
+              </label>
+              <div className="mt-1">
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={`
+                    appearance-none block w-full px-3 py-2 border 
+                    ${errors.email 
+                      ? isDarkMode ? 'border-red-700 bg-red-900/10' : 'border-red-300' 
+                      : isDarkMode ? 'border-gray-600 bg-gray-700' : 'border-neutral-300'} 
+                    rounded-md shadow-sm placeholder-gray-400 
+                    focus:outline-none ${isDarkMode ? 'focus:ring-primary-500 focus:border-primary-500' : 'focus:ring-primary-500 focus:border-primary-500'}
+                    transition duration-150 ease-in-out sm:text-sm
+                    ${isDarkMode ? 'text-white' : 'text-gray-900'}
+                  `}
+                />
+                {errors.email && (
+                  <p className={`mt-1 text-xs ${isDarkMode ? 'text-red-400' : 'text-red-500'}`}>{errors.email}</p>
+                )}
+              </div>
+            </div>
 
-            <InputForm
-              label="Password"
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={formData.password}
-              onChange={handleChange}
-              error={errors.password}
-            />
+            <div>
+              <label htmlFor="password" className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-neutral-700'}`}>
+                {t.auth.login.passwordLabel}
+                <span className="text-accent-500 ml-1">*</span>
+              </label>
+              <div className="mt-1 relative">
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                  className={`
+                    appearance-none block w-full px-3 py-2 border 
+                    ${errors.password 
+                      ? isDarkMode ? 'border-red-700 bg-red-900/10' : 'border-red-300' 
+                      : isDarkMode ? 'border-gray-600 bg-gray-700' : 'border-neutral-300'} 
+                    rounded-md shadow-sm placeholder-gray-400 
+                    focus:outline-none ${isDarkMode ? 'focus:ring-primary-500 focus:border-primary-500' : 'focus:ring-primary-500 focus:border-primary-500'}
+                    transition duration-150 ease-in-out sm:text-sm
+                    ${isDarkMode ? 'text-white' : 'text-gray-900'}
+                  `}
+                />
+                {errors.password && (
+                  <p className={`mt-1 text-xs ${isDarkMode ? 'text-red-400' : 'text-red-500'}`}>{errors.password}</p>
+                )}
+              </div>
+            </div>
 
             <div className="flex items-center justify-between">
               <div className="flex items-center">
@@ -196,35 +235,58 @@ export default function Login() {
                   id="rememberMe"
                   name="rememberMe"
                   type="checkbox"
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded"
+                  className={`h-4 w-4 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-primary-500' : 'text-primary-600 border-neutral-300'} rounded focus:ring-primary-500`}
                   checked={formData.rememberMe}
                   onChange={handleChange}
                 />
-                <label htmlFor="rememberMe" className="ml-2 block text-sm text-neutral-700">
-                  Remember me
+                <label htmlFor="rememberMe" className={`ml-2 block text-sm ${isDarkMode ? 'text-gray-300' : 'text-neutral-700'}`}>
+                  {t.auth.login.rememberMe}
                 </label>
               </div>
 
               <div className="text-sm">
-                <Link to="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
-                  Forgot your password?
+                <Link to="/forgot-password" className={`font-medium ${isDarkMode ? 'text-primary-400 hover:text-primary-300' : 'text-primary-600 hover:text-primary-500'}`}>
+                  {t.auth.login.forgotPassword}
                 </Link>
               </div>
             </div>
 
-            <SubmitButton
-              text="Sign in"
-              isLoading={isLoading}
-            />
+            <div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className={`
+                  w-full flex justify-center py-2 px-4 border border-transparent 
+                  rounded-md shadow-sm text-sm font-medium text-white 
+                  ${isLoading 
+                    ? isDarkMode ? 'bg-primary-700' : 'bg-primary-400' 
+                    : isDarkMode ? 'bg-primary-600 hover:bg-primary-700' : 'bg-primary-600 hover:bg-primary-700'}
+                  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500
+                  transition-colors duration-150 ease-in-out
+                `}
+              >
+                {isLoading ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processing...
+                  </span>
+                ) : (
+                  t.auth.login.submitButton
+                )}
+              </button>
+            </div>
           </form>
 
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-neutral-300" />
+                <div className={`w-full border-t ${isDarkMode ? 'border-gray-600' : 'border-neutral-300'}`} />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-neutral-500">Or continue with</span>
+                <span className={`px-2 ${isDarkMode ? 'bg-gray-800 text-gray-400' : 'bg-white text-neutral-500'}`}>{t.auth.login.continueWith}</span>
               </div>
             </div>
 
@@ -233,7 +295,7 @@ export default function Login() {
                 <button
                   onClick={handleGoogleSignIn}
                   disabled={isLoading}
-                  className="w-full inline-flex justify-center py-2 px-4 border border-neutral-300 rounded-md shadow-sm bg-white text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors duration-150 disabled:opacity-50"
+                  className={`w-full inline-flex justify-center py-2 px-4 border ${isDarkMode ? 'border-gray-600 bg-gray-700 hover:bg-gray-600' : 'border-neutral-300 bg-white hover:bg-neutral-50'} rounded-md shadow-sm text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-neutral-700'} transition-colors duration-150 disabled:opacity-50`}
                 >
                   <span className="sr-only">Sign in with Google</span>
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -246,16 +308,25 @@ export default function Login() {
                 <button
                   onClick={handleFacebookSignIn}
                   disabled={isLoading}
-                  className="w-full inline-flex justify-center py-2 px-4 border border-neutral-300 rounded-md shadow-sm bg-white text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors duration-150 disabled:opacity-50"
+                  className={`w-full inline-flex justify-center py-2 px-4 border ${isDarkMode ? 'border-gray-600 bg-gray-700 hover:bg-gray-600' : 'border-neutral-300 bg-white hover:bg-neutral-50'} rounded-md shadow-sm text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-neutral-700'} transition-colors duration-150 disabled:opacity-50`}
                 >
                   <span className="sr-only">Sign in with Facebook</span>
-                  <svg className="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                  <svg className={`w-5 h-5 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} viewBox="0 0 24 24" fill="currentColor">
                     <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
                   </svg>
                 </button>
               </div>
               <div>
-            </div>
+                <button
+                  disabled={isLoading}
+                  className={`w-full inline-flex justify-center py-2 px-4 border ${isDarkMode ? 'border-gray-600 bg-gray-700 hover:bg-gray-600' : 'border-neutral-300 bg-white hover:bg-neutral-50'} rounded-md shadow-sm text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-neutral-700'} transition-colors duration-150 disabled:opacity-50`}
+                >
+                  <span className="sr-only">Sign in with GitHub</span>
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -263,9 +334,9 @@ export default function Login() {
       
       {/* Growth Tip */}
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-gradient-premium from-primary-50 to-secondary-50 p-4 rounded-lg shadow-sm border border-primary-100">
-          <h3 className="text-sm font-medium text-neutral-800">💡 Growth Tip</h3>
-          <p className="text-xs text-neutral-700 mt-1">
+        <div className={`${isDarkMode ? 'bg-gradient-to-r from-gray-800 to-gray-700 border-gray-700' : 'bg-gradient-premium from-primary-50 to-secondary-50 border-primary-100'} p-4 rounded-lg shadow-sm border`}>
+          <h3 className={`text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-neutral-800'}`}>💡 Growth Tip</h3>
+          <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-neutral-700'} mt-1`}>
             "Consistency is key to personal growth. Even small daily improvements compound over time."
           </p>
         </div>
