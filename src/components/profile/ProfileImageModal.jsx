@@ -3,14 +3,14 @@ import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Upload, Trash2 } from 'lucide-react';
 import { 
-    auth, 
-    db, 
-    storage, 
-    ref, 
-    uploadBytes, 
-    getDownloadURL, 
-    deleteObject 
-  } from '../../config/firebase';
+  auth, 
+  db, 
+  storage, 
+  ref as storageRef, 
+  uploadBytes, 
+  getDownloadURL, 
+  deleteObject 
+} from '../../config/firebase';
 import { updateProfile } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
 
@@ -22,6 +22,8 @@ const ProfileImageModal = ({
 }) => {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
@@ -32,15 +34,16 @@ const ProfileImageModal = ({
       const maxSize = 5 * 1024 * 1024; // 5MB
 
       if (!allowedTypes.includes(file.type)) {
-        alert('Invalid file type. Please upload JPG, PNG, or WebP.');
+        setError('Invalid file type. Please upload JPG, PNG, or WebP.');
         return;
       }
 
       if (file.size > maxSize) {
-        alert('File is too large. Maximum size is 5MB.');
+        setError('File is too large. Maximum size is 5MB.');
         return;
       }
 
+      setError(null);
       setImageFile(file);
       
       // Create preview
@@ -54,8 +57,21 @@ const ProfileImageModal = ({
 
   const uploadProfileImage = async () => {
     if (!imageFile) return;
+    setUploading(true);
+    setError(null);
 
     try {
+      // Delete previous profile image if it exists
+      if (currentPhotoURL && currentPhotoURL.includes('firebase')) {
+        try {
+          // Extract the path from the URL
+          const oldImageRef = storageRef(storage, currentPhotoURL);
+          await deleteObject(oldImageRef);
+        } catch (deleteError) {
+          console.log('Previous image not found or already deleted');
+        }
+      }
+
       // Upload to Firebase Storage
       const imageRef = storageRef(
         storage, 
@@ -70,32 +86,52 @@ const ProfileImageModal = ({
 
       // Update Firestore
       await updateDoc(doc(db, 'users', auth.currentUser.uid), {
-        photoURL: downloadURL
+        photoURL: downloadURL,
+        updatedAt: new Date()
       });
 
       // Close modal
       onClose();
     } catch (error) {
       console.error('Error uploading profile image:', error);
-      alert('Failed to upload profile image');
+      setError('Failed to upload profile image. Please try again.');
+    } finally {
+      setUploading(false);
     }
   };
 
   const removeProfileImage = async () => {
+    if (!currentPhotoURL) return;
+    setUploading(true);
+    setError(null);
+
     try {
+      // Delete image from storage if it exists
+      if (currentPhotoURL && currentPhotoURL.includes('firebase')) {
+        try {
+          const imageRef = storageRef(storage, currentPhotoURL);
+          await deleteObject(imageRef);
+        } catch (deleteError) {
+          console.log('Image not found or already deleted');
+        }
+      }
+
       // Update Firebase Auth profile
       await updateProfile(auth.currentUser, { photoURL: null });
 
       // Update Firestore
       await updateDoc(doc(db, 'users', auth.currentUser.uid), {
-        photoURL: null
+        photoURL: null,
+        updatedAt: new Date()
       });
 
       // Close modal
       onClose();
     } catch (error) {
       console.error('Error removing profile image:', error);
-      alert('Failed to remove profile image');
+      setError('Failed to remove profile image. Please try again.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -107,6 +143,7 @@ const ProfileImageModal = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          onClick={(e) => e.target === e.currentTarget && onClose()}
         >
           <motion.div 
             className={`w-full max-w-md rounded-xl p-6 ${
@@ -115,6 +152,7 @@ const ProfileImageModal = ({
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
+            onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
             <button 
@@ -129,6 +167,13 @@ const ProfileImageModal = ({
             </button>
 
             <h2 className="text-2xl font-bold mb-4">Edit Profile Picture</h2>
+
+            {/* Error message */}
+            {error && (
+              <div className="mb-4 p-2 bg-red-100 border border-red-200 text-red-700 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
 
             {/* File Input */}
             <input
@@ -173,6 +218,7 @@ const ProfileImageModal = ({
                     ? 'bg-gray-700 text-white hover:bg-gray-600'
                     : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                 }`}
+                disabled={uploading}
               >
                 Choose File
               </button>
@@ -184,9 +230,15 @@ const ProfileImageModal = ({
                     isDarkMode 
                       ? 'bg-primary-600 text-white hover:bg-primary-700'
                       : 'bg-primary-500 text-white hover:bg-primary-600'
-                  }`}
+                  } flex items-center justify-center`}
+                  disabled={uploading}
                 >
-                  Upload
+                  {uploading ? (
+                    <>
+                      <span className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full"></span>
+                      Uploading...
+                    </>
+                  ) : "Upload"}
                 </button>
               )}
             </div>
@@ -200,8 +252,18 @@ const ProfileImageModal = ({
                     ? 'text-red-400 hover:bg-red-900/20' 
                     : 'text-red-600 hover:bg-red-50'
                 }`}
+                disabled={uploading}
               >
-                <Trash2 className="mr-2" /> Remove Profile Picture
+                {uploading ? (
+                  <>
+                    <span className="animate-spin h-4 w-4 mr-2 border-2 border-red-500 border-t-transparent rounded-full"></span>
+                    Removing...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="mr-2" /> Remove Profile Picture
+                  </>
+                )}
               </button>
             )}
           </motion.div>
