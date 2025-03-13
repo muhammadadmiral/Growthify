@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { auth, db } from '../../config/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { updateProfile as updateFirebaseProfile } from 'firebase/auth';
+import { useLocation } from 'react-router-dom';
 
 const ProfileInformation = ({ user, isDarkMode, onUserUpdate }) => {
   const [editing, setEditing] = useState(false);

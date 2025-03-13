@@ -1,174 +1,118 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+// src/components/layout/Navbar/LanguageSwitcher.jsx
+import { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '../../../contexts/LanguageContext';
-import { useDarkMode } from '../../../contexts/DarkModeContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
-export default function LanguageSwitcher({ variant = "default" }) {
-  const { language, toggleLanguage, isChangingLanguage } = useLanguage();
-  const { isDarkMode } = useDarkMode();
-  const [imageError, setImageError] = useState(false);
+export default function LanguageSwitcher({ variant = 'default' }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const { language, setLanguage } = useLanguage();
+  const menuRef = useRef(null);
   
-  // Variants for different sizes/styles
-  const variants = {
-    default: {
-      container: "w-20 h-10 rounded-full",
-      text: "text-sm",
-      flagSize: "w-5 h-5"
-    },
-    small: {
-      container: "w-16 h-8 rounded-full", 
-      text: "text-xs",
-      flagSize: "w-4 h-4"
-    },
-    large: {
-      container: "w-24 h-12 rounded-full",
-      text: "text-base",
-      flagSize: "w-6 h-6"
-    },
-    minimal: {
-      container: "px-2 py-1 rounded",
-      text: "text-xs",
-      flagSize: "w-4 h-4"
-    },
-    contrast: {
-      container: "w-20 h-10 rounded-full",
-      text: "text-sm text-white",
-      flagSize: "w-5 h-5"
-    }
-  };
-  
-  const style = variants[variant] || variants.default;
-  
-  // Flag paths with multiple potential locations to try
-  const flagPaths = language === 'en' 
-    ? [
-        '/flags/us-flag.png',
-        '/assets/flags/us-flag.png',
-        '/images/flags/us-flag.png',
-        '/public/flags/us-flag.png'
-      ]
-    : [
-        '/flags/idn-flag.png',
-        '/assets/flags/idn-flag.png',
-        '/images/flags/idn-flag.png',
-        '/public/flags/idn-flag.png'
-      ];
-  
-  // We'll try the first path initially
-  const [currentFlagPathIndex, setCurrentFlagPathIndex] = useState(0);
-  const flagPath = flagPaths[currentFlagPathIndex];
-  
-  // Get language text
-  const getText = (lang) => {
-    return lang === 'en' ? 'EN' : 'ID';
-  };
-  
-  // Animation variants
-  const containerVariants = {
-    hover: {
-      scale: 1.05,
-      transition: { duration: 0.2 }
-    },
-    tap: {
-      scale: 0.95,
-      transition: { duration: 0.2 }
-    }
-  };
-  
-  const contentVariants = {
-    hidden: { 
-      opacity: 0,
-      y: 5
-    },
-    visible: { 
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.3,
-        ease: "easeOut"
+  // Close the menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsOpen(false);
       }
-    },
-    exit: {
-      opacity: 0,
-      y: -5,
-      transition: {
-        duration: 0.2,
-        ease: "easeIn"
-      }
-    }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+  
+  const handleChangeLanguage = (lang) => {
+    setLanguage(lang);
+    setIsOpen(false);
   };
   
-  const handleImageError = () => {
-    // Try the next flag path if available
-    if (currentFlagPathIndex < flagPaths.length - 1) {
-      setCurrentFlagPathIndex(currentFlagPathIndex + 1);
-    } else {
-      // If all paths have failed, fall back to emoji
-      setImageError(true);
-    }
-  };
+  // Languages with their display names and flag images
+  const languages = [
+    { code: 'en', name: 'English', flagSrc: '/flags/us-flag.png' },
+    { code: 'id', name: 'Bahasa Indonesia', flagSrc: '/flags/idn-flag.png' }
+  ];
+  
+  // Get current language details
+  const currentLang = languages.find(lang => lang.code === language) || languages[0];
   
   return (
-    <motion.button 
-      onClick={toggleLanguage}
-      disabled={isChangingLanguage}
-      className={`
-        relative flex items-center justify-center 
-        ${style.container} transition-all duration-300
-        ${variant === 'contrast' 
-          ? 'bg-white/10 hover:bg-white/20'
-          : isDarkMode
-            ? 'text-gray-300 hover:bg-gray-700'
-            : 'text-primary-700 hover:bg-primary-100/20'
-        }
-        ${isChangingLanguage ? 'opacity-50 cursor-wait' : ''}
-      `}
-      variants={containerVariants}
-      whileHover="hover"
-      whileTap="tap"
-      aria-label="Switch Language"
-    >
-      <AnimatePresence mode="wait">
-        <motion.div 
-          key={language}
-          className="absolute flex items-center"
-          variants={contentVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-        >
-          {!imageError ? (
+    <div ref={menuRef} className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+        aria-expanded={isOpen}
+        aria-haspopup="true"
+      >
+        {variant === 'compact' ? (
+          <div className="w-6 h-6 overflow-hidden rounded-full">
             <img 
-              key={`flag-${language}-${currentFlagPathIndex}`}
-              src={flagPath}
-              alt={language === 'en' ? 'English' : 'Bahasa Indonesia'}
-              className={`${style.flagSize} mr-2 rounded-full object-cover shadow-sm`}
-              onError={handleImageError}
+              src={currentLang.flagSrc} 
+              alt={`${currentLang.name} flag`}
+              className="w-full h-full object-cover"
             />
-          ) : (
-            <span className={`${style.flagSize} mr-2 rounded-full flex items-center justify-center`}>
-              {language === 'en' ? '🇺🇸' : '🇮🇩'}
-            </span>
-          )}
-          <span className={style.text}>
-            {getText(language)}
-          </span>
-        </motion.div>
-      </AnimatePresence>
+          </div>
+        ) : (
+          <div className="flex items-center space-x-1">
+            <div className="w-5 h-5 overflow-hidden rounded-full">
+              <img 
+                src={currentLang.flagSrc} 
+                alt={`${currentLang.name} flag`}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <span className="text-sm">{currentLang.code.toUpperCase()}</span>
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        )}
+      </button>
       
-      {/* Loading indicator during language change */}
-      {isChangingLanguage && (
-        <span className="absolute inset-0 flex items-center justify-center">
-          <motion.span 
-            className="w-5 h-5 rounded-full border-2 border-t-transparent"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            style={{ 
-              borderColor: isDarkMode ? '#4FD1C5 transparent #4FD1C5 #4FD1C5' : '#38A169 transparent #38A169 #38A169'
-            }}
-          />
-        </span>
-      )}
-    </motion.button>
+      {/* Language dropdown */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 ring-1 ring-black ring-opacity-5 z-50"
+          >
+            {languages.map(lang => (
+              <button
+                key={lang.code}
+                onClick={() => handleChangeLanguage(lang.code)}
+                className={`
+                  w-full text-left px-4 py-2 text-sm flex items-center space-x-3
+                  ${language === lang.code 
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400' 
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}
+                `}
+              >
+                <div className="w-5 h-5 overflow-hidden rounded-full">
+                  <img 
+                    src={lang.flagSrc} 
+                    alt={`${lang.name} flag`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span>{lang.name}</span>
+                
+                {language === lang.code && (
+                  <svg className="h-5 w-5 ml-auto text-primary-600 dark:text-primary-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

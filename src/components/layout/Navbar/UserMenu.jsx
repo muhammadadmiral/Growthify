@@ -1,140 +1,160 @@
 // src/components/layout/Navbar/UserMenu.jsx
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDownIcon } from 'lucide-react';
-import { signOut } from 'firebase/auth';
 import { auth } from '../../../config/firebase';
-import UserMenuItems from './UserMenuItems';
+import { signOut } from 'firebase/auth';
 
 export default function UserMenu({ userData, isDarkMode, menuItems }) {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef(null);
   const navigate = useNavigate();
 
-  // Close dropdown when clicking outside
+  // Close the menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsOpen(false);
       }
     };
+    
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isDropdownOpen]);
+  }, []);
 
-  // Get user initials for avatar
-  const getUserInitials = (name) => {
-    if (!name) return "U";
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  // Handle menu item click
+  const handleMenuItemClick = (item) => {
+    setIsOpen(false);
+    
+    if (item.action === 'signOut') {
+      handleSignOut();
+    } else if (item.path) {
+      navigate(item.path);
+    }
   };
   
-  // Handle sign out
+  // Sign out handler
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      // Redirect to home page after signing out
-      navigate('/');
+      navigate('/login');
     } catch (error) {
-      console.error("Error signing out: ", error);
+      console.error('Error signing out:', error);
     }
-  };
-  
-  // Handle menu item click - for sign out action
-  const handleMenuItemClick = (action) => {
-    if (action === 'signOut') {
-      handleSignOut();
-    }
-    setIsDropdownOpen(false);
   };
 
   return (
-    <div className="relative user-dropdown" ref={dropdownRef}>
-      <motion.button 
-        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="flex items-center space-x-2 rounded-lg p-1.5 relative overflow-hidden text-primary-500 hover:text-primary-400 transition-colors duration-300"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        aria-expanded={isDropdownOpen}
+    <div ref={menuRef} className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center space-x-1 sm:space-x-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500"
+        aria-expanded={isOpen}
+        aria-haspopup="true"
       >
-        <span className={`absolute inset-0 rounded-lg opacity-0 hover:opacity-100 ${
-          isDarkMode ? 'bg-primary-900/50' : 'bg-primary-50/70'
-        } transition-opacity duration-300`}></span>
+        <div className="hidden sm:flex flex-col items-end">
+          <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+            {userData.name.split(' ')[0]}
+          </span>
+          <span className={`text-xs ${isDarkMode ? 'text-primary-400' : 'text-primary-600'}`}>
+            Level {userData.level}
+          </span>
+        </div>
         
-        {/* Avatar with premium effects */}
-        <div className="relative group">
-          <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-500 opacity-40 blur-sm group-hover:opacity-70 transition-opacity duration-300"></div>
+        <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
           {userData.avatar ? (
             <img 
               src={userData.avatar} 
               alt={userData.name} 
-              className="h-8 w-8 rounded-full object-cover shadow-md relative ring-2 ring-white/10 dark:ring-black/5"
+              className="w-full h-full object-cover"
             />
           ) : (
-            <div className="h-8 w-8 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br from-primary-500 to-secondary-500 shadow-md relative ring-2 ring-white/10 dark:ring-black/5">
-              {getUserInitials(userData.name)}
+            <div 
+              className={`w-full h-full flex items-center justify-center text-lg font-semibold ${
+                isDarkMode ? 'bg-primary-900 text-primary-400' : 'bg-primary-100 text-primary-600'
+              }`}
+            >
+              {userData.name.charAt(0).toUpperCase()}
             </div>
           )}
         </div>
-        
-        <div className="hidden sm:flex items-center text-primary-500 hover:text-primary-400">
-          <span className="text-sm font-medium">{userData.name.split(' ')[0]}</span>
-          <ChevronDownIcon size={16} className="ml-1" />
-        </div>
-      </motion.button>
+      </button>
       
-      {/* User Dropdown Menu with elegant styling */}
+      {/* Dropdown Menu */}
       <AnimatePresence>
-        {isDropdownOpen && (
-          <motion.div 
-            className={`absolute right-0 mt-3 w-56 rounded-xl overflow-hidden z-10 ${
-              isDarkMode 
-                ? 'bg-gray-900/95 border border-primary-900/50 shadow-xl shadow-primary-900/20' 
-                : 'bg-white/95 border border-primary-100/50 shadow-xl shadow-primary-500/10'
-            }`}
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
+            className={`
+              absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 
+              ${isDarkMode 
+                ? 'bg-gray-800 border border-gray-700' 
+                : 'bg-white border border-gray-200'}
+              ring-1 ring-black ring-opacity-5 z-50
+            `}
           >
-            {/* Top accent border with gradient */}
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary-600 via-secondary-500 to-primary-600"></div>
-            
-            {/* User Info */}
-            <div className={`px-4 py-4 ${isDarkMode ? 'border-b border-gray-800' : 'border-b border-gray-100'}`}>
-              <div className="flex items-center space-x-3">
-                {/* Avatar with premium effects */}
-                <div className="relative group">
-                  <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-500 opacity-40 blur-sm"></div>
-                  {userData.avatar ? (
-                    <img 
-                      src={userData.avatar} 
-                      alt={userData.name} 
-                      className="h-10 w-10 rounded-full object-cover shadow-md relative ring-2 ring-white/10 dark:ring-black/5"
-                    />
-                  ) : (
-                    <div className="h-10 w-10 rounded-full flex items-center justify-center text-white font-medium bg-gradient-to-br from-primary-500 to-secondary-500 shadow-md relative ring-2 ring-white/10 dark:ring-black/5">
-                      {getUserInitials(userData.name)}
-                    </div>
-                  )}
+            {/* User Info Section */}
+            <div className={`px-4 py-3 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+              <p className={`text-sm font-medium truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                {userData.name}
+              </p>
+              <p className={`text-xs truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                {userData.email}
+              </p>
+              <div className="mt-2 flex items-center">
+                <div className={`flex-shrink-0 h-2 w-full rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
+                  <div 
+                    className="h-2 rounded-full bg-gradient-to-r from-primary-500 to-secondary-500"
+                    style={{ width: `${userData.points % 1000 / 10}%` }}
+                  />
                 </div>
-                <div>
-                  <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-neutral-900'}`}>
-                    {userData.name}
-                  </p>
-                  <p className={`text-xs truncate max-w-[10rem] ${isDarkMode ? 'text-gray-400' : 'text-neutral-500'}`}>
-                    {userData.email}
-                  </p>
-                </div>
+                <p className={`ml-2 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  {userData.points % 1000} / 1000 XP
+                </p>
               </div>
             </div>
             
             {/* Menu Items */}
-            <UserMenuItems 
-              items={menuItems} 
-              isDarkMode={isDarkMode} 
-              onItemClick={handleMenuItemClick}
-            />
+            <div className="py-1">
+              {menuItems.map((item, index) => (
+                <button
+                  key={index}
+                  className={`
+                    w-full text-left px-4 py-2 text-sm 
+                    ${isDarkMode 
+                      ? 'text-gray-300 hover:bg-gray-700' 
+                      : 'text-gray-700 hover:bg-gray-100'}
+                    flex items-center
+                  `}
+                  onClick={() => handleMenuItemClick(item)}
+                >
+                  {item.icon === 'profile' && (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  )}
+                  {item.icon === 'settings' && (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  )}
+                  {item.icon === 'help' && (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  )}
+                  {item.icon === 'signOut' && (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                  )}
+                  {item.name}
+                </button>
+              ))}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

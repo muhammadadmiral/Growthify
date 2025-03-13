@@ -9,16 +9,9 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Import components
-import AuthButtons from './Navbar/AuthButtons';
-import DarkModeToggle from './Navbar/DarkModeToggle';
-import DesktopNav from './Navbar/DesktopNav';
-import LanguageSwitcher from './Navbar/LanguageSwitcher';
-import Logo from './Navbar/Logo';
-import MobileMenu from './Navbar/MobileMenu';
 import UserMenu from './Navbar/UserMenu';
-
-// Import icons (these would normally be imported from react-icons)
-// If you don't have react-icons installed, the icons will fallback to the SVG versions
+import DarkModeToggle from './Navbar/DarkModeToggle';
+import LanguageSwitcher from './Navbar/LanguageSwitcher';
 
 // Simple translations object
 const translations = {
@@ -54,7 +47,7 @@ const translations = {
   }
 };
 
-export default function Navbar({ onMenuClick }) {
+export default function Navbar({ onMenuClick, isSidebarOpen }) {
   const [userData, setUserData] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -248,28 +241,90 @@ export default function Navbar({ onMenuClick }) {
           <div className="flex items-center space-x-4">
             {/* Menu buttons */}
             {isUserLoggedIn && isDashboardPage ? (
-              <MobileMenu.DashboardButton onMenuClick={onMenuClick} isDarkMode={isDarkMode} />
+              <button
+                onClick={onMenuClick}
+                className={`p-2 rounded-lg transition-colors duration-200
+                  ${isDarkMode 
+                    ? `${isSidebarOpen ? 'bg-gray-800 text-primary-400' : 'text-gray-300 hover:bg-gray-800'}`
+                    : `${isSidebarOpen ? 'bg-primary-50 text-primary-600' : 'text-gray-700 hover:bg-gray-100'}`
+                  }
+                `}
+                aria-label="Toggle dashboard menu"
+                aria-expanded={isSidebarOpen}
+              >
+                {isSidebarOpen ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                )}
+              </button>
             ) : (
-              <MobileMenu.Button 
-                isOpen={isMobileMenuOpen}
+              <button 
+                className={`p-2 rounded-lg md:hidden
+                  ${isDarkMode 
+                    ? 'text-gray-300 hover:bg-gray-800' 
+                    : 'text-gray-700 hover:bg-gray-100'}
+                `}
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                isDarkMode={isDarkMode}
-              />
+                aria-label="Toggle menu"
+                aria-expanded={isMobileMenuOpen}
+              >
+                {isMobileMenuOpen ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                )}
+              </button>
             )}
             
             {/* Logo */}
-            <Logo isDarkMode={isDarkMode} />
+            <Link to={isUserLoggedIn ? '/dashboard' : '/'} className="flex items-center">
+              <div 
+                className="font-heading font-bold text-xl sm:text-2xl transition-all duration-300 hover:scale-105"
+                style={{
+                  backgroundImage: 'linear-gradient(90deg, #319795, #3182CE)',
+                  WebkitBackgroundClip: 'text',
+                  backgroundClip: 'text',
+                  color: 'transparent'
+                }}
+              >
+                Growthify
+              </div>
+            </Link>
           </div>
           
           {/* Middle section: Navigation Links for public, Search for dashboard */}
           <div className="hidden md:flex items-center justify-center flex-1 max-w-md mx-auto">
             {isAuthCheckComplete && !isDashboardPage && (
-              <DesktopNav 
-                links={publicNavLinks} 
-                currentPath={location.pathname}
-                isDarkMode={isDarkMode}
-                isScrolled={isScrolled}
-              />
+              <div className="flex space-x-1 sm:space-x-2">
+                {publicNavLinks.map((link) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors
+                      ${location.pathname === link.path
+                        ? isDarkMode
+                          ? 'text-primary-400 bg-primary-900/20'
+                          : 'text-primary-600 bg-primary-50'
+                        : isDarkMode
+                          ? 'text-gray-300 hover:text-primary-400 hover:bg-gray-800'
+                          : 'text-gray-700 hover:text-primary-600 hover:bg-gray-100'
+                      }
+                    `}
+                    aria-current={location.pathname === link.path ? 'page' : undefined}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+              </div>
             )}
             
             {isAuthCheckComplete && isUserLoggedIn && isDashboardPage && (
@@ -282,7 +337,6 @@ export default function Navbar({ onMenuClick }) {
                       </svg>
                     </div>
                     <input
-                      ref={searchInputRef}
                       type="text"
                       placeholder={t.search}
                       value={searchQuery}
@@ -303,12 +357,14 @@ export default function Navbar({ onMenuClick }) {
           </div>
           
           {/* Right Side */}
-          <div className="flex items-center space-x-3 md:space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-3">
             {/* Dark Mode Toggle */}
             <DarkModeToggle isDarkMode={isDarkMode} />
 
             {/* Language Switcher */}
-            <LanguageSwitcher variant="default" />
+            <LanguageSwitcher 
+              variant={typeof window !== 'undefined' && window.innerWidth < 640 ? "compact" : "default"} 
+            />
             
             {/* Mobile Search Button - Dashboard only */}
             {isUserLoggedIn && isDashboardPage && (
@@ -348,7 +404,7 @@ export default function Navbar({ onMenuClick }) {
                   
                   {/* Notification badge */}
                   {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center text-xs bg-red-500 text-white rounded-full">
+                    <span className="absolute top-0 right-0 w-4 h-4 flex items-center justify-center text-xs bg-red-500 text-white rounded-full">
                       {unreadCount}
                     </span>
                   )}
@@ -364,7 +420,7 @@ export default function Navbar({ onMenuClick }) {
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.2 }}
                       className={`
-                        absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto py-2 rounded-lg shadow-lg
+                        absolute right-0 mt-2 w-72 sm:w-80 max-h-96 overflow-y-auto py-2 rounded-lg shadow-lg
                         ${isDarkMode 
                           ? 'bg-gray-800 border border-gray-700 text-gray-200' 
                           : 'bg-white border border-gray-200 text-gray-800'}
@@ -435,27 +491,70 @@ export default function Navbar({ onMenuClick }) {
                 { name: t.signOut, action: 'signOut', icon: 'signOut' }
               ]} />
             ) : isAuthCheckComplete && (
-              <AuthButtons 
-                loginText={t.login} 
-                registerText={t.getStarted} 
-                isDarkMode={isDarkMode} 
-              />
+              <div className="flex items-center">
+                <Link
+                  to="/login"
+                  className={`py-2 px-3 sm:px-4 text-sm font-medium rounded-lg mr-2 transition-colors ${
+                    isDarkMode
+                      ? 'text-white hover:bg-gray-800'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {t.login}
+                </Link>
+                <Link
+                  to="/register"
+                  className={`py-2 px-3 sm:px-4 text-sm font-medium rounded-lg transition-colors ${
+                    isDarkMode
+                      ? 'bg-primary-700 hover:bg-primary-600 text-white'
+                      : 'bg-primary-600 hover:bg-primary-700 text-white'
+                  }`}
+                >
+                  {t.getStarted}
+                </Link>
+              </div>
             )}
           </div>
         </div>
       </div>
 
       {/* Mobile Menu */}
-      {!isUserLoggedIn && (
-        <MobileMenu.Panel 
-          isOpen={isMobileMenuOpen}
-          links={publicNavLinks}
-          currentPath={location.pathname}
-          isDarkMode={isDarkMode}
-          registerText={t.getStarted}
-          onLinkClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
+      <AnimatePresence>
+        {isMobileMenuOpen && !isUserLoggedIn && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className={`md:hidden border-t overflow-hidden ${
+              isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'
+            }`}
+          >
+            <div className="container mx-auto px-4 py-3">
+              <div className="space-y-1">
+                {publicNavLinks.map((link) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    className={`block px-4 py-3 rounded-lg text-base font-medium ${
+                      location.pathname === link.path
+                        ? isDarkMode
+                          ? 'bg-primary-900/20 text-primary-400'
+                          : 'bg-primary-50 text-primary-600'
+                        : isDarkMode
+                          ? 'text-gray-300 hover:bg-gray-800'
+                          : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* Mobile Search Panel */}
       <AnimatePresence>

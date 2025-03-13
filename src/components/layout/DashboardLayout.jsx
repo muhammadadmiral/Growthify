@@ -1,94 +1,194 @@
 // src/components/layout/DashboardLayout.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import Sidebar from './Sidebar';
 import Navbar from './Navbar';
-import Footer from './Footer';
+import Sidebar from './Sidebar';
 import { useDarkMode } from '../../contexts/DarkModeContext';
 
-const DashboardLayout = ({ children, isSidebarOpen: externalSidebarOpen, toggleSidebar, closeSidebar }) => {
-  // Initialize sidebar state based on screen size
-  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
-    return window.innerWidth >= 1024;
-  });
-  
+export default function DashboardLayout({ children }) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default to closed
   const { isDarkMode } = useDarkMode();
   const location = useLocation();
-
-  // Sync with external state if provided
-  useEffect(() => {
-    if (externalSidebarOpen !== undefined) {
-      setIsSidebarOpen(externalSidebarOpen);
-    }
-  }, [externalSidebarOpen]);
-
-  // Close sidebar on route change for small screens
-  useEffect(() => {
-    if (window.innerWidth < 1024) {
-      setIsSidebarOpen(false);
-    }
-  }, [location.pathname]);
-
-  // Handle window resize to manage sidebar visibility
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setIsSidebarOpen(true);
+  const initialRender = useRef(true);
+  
+  // Function to toggle sidebar - direct DOM manipulation for reliability
+  const toggleSidebar = () => {
+    const newState = !isSidebarOpen;
+    setIsSidebarOpen(newState);
+    
+    // Direct DOM manipulation - this ensures the sidebar actually moves
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+      if (newState) {
+        sidebar.classList.remove('hidden-sidebar');
+        sidebar.classList.add('visible-sidebar');
+        
+        // Show overlay on mobile
+        if (window.innerWidth < 1024) {
+          let overlay = document.getElementById('sidebar-overlay');
+          if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'sidebar-overlay';
+            overlay.className = 'fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-20 lg:hidden';
+            overlay.onclick = () => toggleSidebar();
+            document.body.appendChild(overlay);
+          } else {
+            overlay.style.display = 'block';
+          }
+        }
       } else {
-        setIsSidebarOpen(false);
+        sidebar.classList.remove('visible-sidebar');
+        sidebar.classList.add('hidden-sidebar');
+        
+        // Hide overlay
+        const overlay = document.getElementById('sidebar-overlay');
+        if (overlay) {
+          overlay.style.display = 'none';
+        }
+      }
+    }
+  };
+  
+  // Handle sidebar close from child component
+  const handleCloseSidebar = () => {
+    if (isSidebarOpen) {
+      toggleSidebar();
+    }
+  };
+  
+  // On route change, close sidebar on mobile
+  useEffect(() => {
+    if (window.innerWidth < 1024 && isSidebarOpen) {
+      setIsSidebarOpen(false);
+      
+      // Direct DOM manipulation
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar) {
+        sidebar.classList.remove('visible-sidebar');
+        sidebar.classList.add('hidden-sidebar');
+      }
+      
+      // Hide overlay
+      const overlay = document.getElementById('sidebar-overlay');
+      if (overlay) {
+        overlay.style.display = 'none';
+      }
+    }
+  }, [location.pathname, isSidebarOpen]);
+  
+  // Initialize sidebar state properly and handle window resize
+  useEffect(() => {
+    // Set initial sidebar state based on screen size
+    const isDesktop = window.innerWidth >= 1024;
+    setIsSidebarOpen(isDesktop);
+    
+    // Initialize sidebar visibility on mount
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+      if (isDesktop) {
+        sidebar.classList.remove('hidden-sidebar');
+        sidebar.classList.add('visible-sidebar');
+      } else {
+        sidebar.classList.remove('visible-sidebar');
+        sidebar.classList.add('hidden-sidebar');
+      }
+    }
+    
+    // Handle window resize
+    const handleResize = () => {
+      const isDesktopNow = window.innerWidth >= 1024;
+      setIsSidebarOpen(isDesktopNow);
+      
+      // Update sidebar visibility on resize
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar) {
+        if (isDesktopNow) {
+          sidebar.classList.remove('hidden-sidebar');
+          sidebar.classList.add('visible-sidebar');
+        } else {
+          sidebar.classList.remove('visible-sidebar');
+          sidebar.classList.add('hidden-sidebar');
+        }
+      }
+      
+      // Handle overlay on resize
+      if (isDesktopNow) {
+        const overlay = document.getElementById('sidebar-overlay');
+        if (overlay) {
+          overlay.style.display = 'none';
+        }
       }
     };
-
-    window.addEventListener('resize', handleResize);
-    handleResize();
     
+    window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  // Handle toggling sidebar
-  const handleToggleSidebar = () => {
-    setIsSidebarOpen(prevState => !prevState);
-    if (toggleSidebar) toggleSidebar();
-  };
-
-  // Handle closing sidebar
-  const handleCloseSidebar = () => {
-    setIsSidebarOpen(false);
-    if (closeSidebar) closeSidebar();
-  };
-
-  return (
-    <div className={`min-h-screen flex flex-col ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
-      {/* Fixed Navbar */}
-      <div className="fixed top-0 left-0 right-0 z-40">
-        <Navbar onMenuClick={handleToggleSidebar} />
-      </div>
-      
-      {/* Main Layout (Sidebar + Content) */}
-      <div className="flex flex-1 pt-16 sm:pt-20">
-        {/* Sidebar - Fixed on large screens, absolute on mobile */}
-        <div className={`${isSidebarOpen ? 'block' : 'hidden lg:block'} lg:w-64 flex-shrink-0`}>
-          <Sidebar 
-            isOpen={isSidebarOpen} 
-            onClose={handleCloseSidebar} 
-          />
-        </div>
+  
+  // Add global styles for sidebar visibility states
+  useEffect(() => {
+    // Create style element if it doesn't exist
+    let styleElement = document.getElementById('dashboard-layout-styles');
+    if (!styleElement) {
+      styleElement = document.createElement('style');
+      styleElement.id = 'dashboard-layout-styles';
+      styleElement.innerHTML = `
+        /* Base sidebar styles */
+        #sidebar {
+          transition: transform 0.3s ease-in-out;
+        }
         
-        {/* Content Area */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          {/* Main Content */}
-          <main className="flex-1 overflow-y-auto">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl">
-              {children}
-            </div>
-          </main>
-          
-          {/* Footer */}
-          <Footer isDarkMode={isDarkMode} />
-        </div>
+        /* Hidden state */
+        .hidden-sidebar {
+          transform: translateX(-100%);
+        }
+        
+        /* Visible state */
+        .visible-sidebar {
+          transform: translateX(0);
+        }
+        
+        /* Always show on desktop */
+        @media (min-width: 1024px) {
+          .visible-sidebar {
+            transform: translateX(0) !important;
+          }
+        }
+      `;
+      document.head.appendChild(styleElement);
+    }
+    
+    return () => {
+      // Clean up on unmount
+      const styleToRemove = document.getElementById('dashboard-layout-styles');
+      if (styleToRemove) {
+        document.head.removeChild(styleToRemove);
+      }
+    };
+  }, []);
+  
+  return (
+    <div className={`min-h-screen flex flex-col ${isDarkMode ? 'bg-gray-950 text-gray-200' : 'bg-gray-50 text-gray-800'}`}>
+      {/* Navbar */}
+      <Navbar 
+        onMenuClick={toggleSidebar}
+        isSidebarOpen={isSidebarOpen}
+      />
+      
+      {/* Main container */}
+      <div className="flex flex-1 pt-16 sm:pt-20">
+        {/* Sidebar */}
+        <Sidebar 
+          isOpen={isSidebarOpen} 
+          onClose={handleCloseSidebar}
+        />
+        
+        {/* Main content area */}
+        <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'lg:ml-64' : ''}`}>
+          <div className="container mx-auto px-4 sm:px-6 py-6">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );
-};
-
-export default DashboardLayout;
+}

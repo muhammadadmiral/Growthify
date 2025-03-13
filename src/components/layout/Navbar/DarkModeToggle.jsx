@@ -1,34 +1,53 @@
 // src/components/layout/Navbar/DarkModeToggle.jsx
-import { motion, AnimatePresence } from 'framer-motion';
-import { MoonIcon, SunIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useDarkMode } from '../../../contexts/DarkModeContext';
 
 export default function DarkModeToggle() {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   
   return (
-    <motion.button
+    <button
       onClick={toggleDarkMode}
-      className="p-2 rounded-lg relative overflow-hidden text-primary-500 hover:text-primary-400 transition-colors duration-300"
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.9 }}
-      aria-label="Toggle Dark Mode"
+      className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+      aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
     >
-      <span className={`absolute inset-0 rounded-lg opacity-0 hover:opacity-100 ${
-        isDarkMode ? 'bg-primary-900/50' : 'bg-primary-50/70'
-      } transition-opacity duration-300`}></span>
-      
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={isDarkMode ? 'dark' : 'light'}
-          initial={{ opacity: 0, rotate: -30, scale: 0.5 }}
-          animate={{ opacity: 1, rotate: 0, scale: 1 }}
-          exit={{ opacity: 0, rotate: 30, scale: 0.5 }}
-          transition={{ duration: 0.3 }}
+      {isDarkMode ? (
+        <motion.svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          className="h-5 w-5 text-yellow-300" 
+          fill="none" 
+          viewBox="0 0 24 24" 
+          stroke="currentColor"
+          initial={{ rotate: -45 }}
+          animate={{ rotate: 0 }}
+          transition={{ duration: 0.4 }}
         >
-          {isDarkMode ? <SunIcon size={18} /> : <MoonIcon size={18} />}
-        </motion.div>
-      </AnimatePresence>
-    </motion.button>
+          <path 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            strokeWidth={2} 
+            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" 
+          />
+        </motion.svg>
+      ) : (
+        <motion.svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          className="h-5 w-5 text-indigo-600" 
+          fill="none" 
+          viewBox="0 0 24 24" 
+          stroke="currentColor"
+          initial={{ rotate: 45 }}
+          animate={{ rotate: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <path 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            strokeWidth={2} 
+            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" 
+          />
+        </motion.svg>
+      )}
+    </button>
   );
 }
