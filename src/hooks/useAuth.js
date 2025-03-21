@@ -1,18 +1,46 @@
 // src/hooks/useAuth.js
 import { useState, useEffect } from 'react';
-import { auth, getUserProfile } from '../config/firebase';
+import { auth, getUserProfile, updateUserProfile } from '../config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 
 export const useAuth = () => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Refresh user profile
+  const refreshProfile = async () => {
+    if (user) {
+      try {
+        const userProfile = await getUserProfile(user.uid);
+        setProfile(userProfile);
+        return userProfile;
+      } catch (error) {
+        console.error('Error refreshing user profile:', error);
+        return null;
+      }
+    }
+    return null;
+  };
+
+  // Update user profile
+  const updateProfile = async (profileData) => {
+    if (user) {
+      try {
+        await updateUserProfile(user, profileData);
+        return await refreshProfile();
+      } catch (error) {
+        console.error('Error updating profile:', error);
+        throw error;
+      }
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
       if (authUser) {
         try {
-          // Dapatkan detail profil pengguna dari Firestore
           const userProfile = await getUserProfile(authUser.uid);
           setUser(authUser);
           setProfile(userProfile);
@@ -28,7 +56,6 @@ export const useAuth = () => {
       setLoading(false);
     });
 
-    // Cleanup subscription saat komponen unmount
     return () => unsubscribe();
   }, []);
 
@@ -36,11 +63,13 @@ export const useAuth = () => {
     user, 
     profile, 
     loading,
-    isAuthenticated: !!user 
+    isAuthenticated: !!user,
+    refreshProfile,
+    updateProfile
   };
 };
 
-// Contoh hook untuk redirect berdasarkan autentikasi
+// Authentication Redirect Hook
 export const useRequireAuth = (redirectPath = '/login') => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();

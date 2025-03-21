@@ -1,8 +1,21 @@
-// src/config/firebase.js
 import { initializeApp } from 'firebase/app';
 import { 
-  updateProfile ,
-  getAuth, 
+  getFirestore,
+  collection, 
+  doc, 
+  setDoc, 
+  getDocs, 
+  query, 
+  where, 
+  updateDoc, 
+  deleteDoc,
+  increment,
+  addDoc,
+  getDoc as firestoreGetDoc // Rename to avoid conflict
+} from 'firebase/firestore';
+import { 
+  getAuth,
+  updateProfile,
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword as firebaseSignIn,
   sendEmailVerification,
@@ -18,13 +31,105 @@ import {
   fetchSignInMethodsForEmail
 } from 'firebase/auth';
 import { 
-  getFirestore, 
-  doc, 
-  getDoc, 
-  setDoc, 
-  updateDoc 
-} from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+  getStorage, 
+  ref, 
+  uploadBytes, 
+  getDownloadURL,
+  deleteObject
+} from 'firebase/storage';
+
+export const saveWorkoutPlan = async (userId, workoutPlan) => {
+  try {
+    const workoutPlansRef = collection(db, 'workoutPlans');
+    const newDocRef = doc(workoutPlansRef);
+    
+    const workoutPlanData = {
+      ...workoutPlan,
+      userId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      completedSessions: 0
+    };
+
+    await setDoc(newDocRef, {
+      ...workoutPlanData,
+      id: newDocRef.id
+    });
+
+    return { ...workoutPlanData, id: newDocRef.id };
+  } catch (error) {
+    console.error('Error saving workout plan:', error);
+    throw error;
+  }
+};
+
+// Fetch user's workout plans
+export const getUserWorkoutPlans = async (userId) => {
+  try {
+    const q = query(
+      collection(db, 'workoutPlans'), 
+      where('userId', '==', userId)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error('Error fetching workout plans:', error);
+    throw error;
+  }
+};
+
+// Update a specific workout plan
+export const updateWorkoutPlan = async (planId, updateData) => {
+  try {
+    const planRef = doc(db, 'workoutPlans', planId);
+    await updateDoc(planRef, {
+      ...updateData,
+      updatedAt: new Date()
+    });
+  } catch (error) {
+    console.error('Error updating workout plan:', error);
+    throw error;
+  }
+};
+
+// Delete a workout plan
+export const deleteWorkoutPlan = async (planId) => {
+  try {
+    const planRef = doc(db, 'workoutPlans', planId);
+    await deleteDoc(planRef);
+  } catch (error) {
+    console.error('Error deleting workout plan:', error);
+    throw error;
+  }
+};
+
+// Track workout session
+export const trackWorkoutSession = async (userId, planId) => {
+  try {
+    const planRef = doc(db, 'workoutPlans', planId);
+    
+    // Increment completed sessions and update last used
+    await updateDoc(planRef, {
+      completedSessions: increment(1),
+      lastUsed: new Date()
+    });
+
+    // Optionally, create a separate collection for detailed workout history
+    const workoutHistoryRef = collection(db, 'workoutHistory');
+    await addDoc(workoutHistoryRef, {
+      userId,
+      planId,
+      completedAt: new Date()
+    });
+  } catch (error) {
+    console.error('Error tracking workout session:', error);
+    throw error;
+  }
+};
 
 // Update user profile in Firebase Auth
 export const updateUserProfile = async (user, profileData) => {
@@ -70,6 +175,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app); // Add this line to define storage
 
 // Email/Password Registration
 const registerWithEmailAndPassword = async (name, email, password) => {
@@ -132,8 +238,8 @@ const signInWithGoogle = async () => {
     
     // Store/update user data in Firestore
     const userRef = doc(db, 'users', user.uid);
-    const userSnap = await getDoc(userRef);
-    
+    const userSnap = await firestoreGetDoc(userRef);    
+
     if (!userSnap.exists()) {
       // Create new user document if it doesn't exist
       await setDoc(userRef, {
@@ -178,7 +284,7 @@ const signInWithFacebook = async () => {
     
     // Store/update user data in Firestore
     const userRef = doc(db, 'users', user.uid);
-    const userSnap = await getDoc(userRef);
+    const userSnap = await firestoreGetDoc(userRef);
     
     if (!userSnap.exists()) {
       // Create new user document if it doesn't exist
@@ -220,7 +326,7 @@ const signInWithApple = async () => {
 
     // Store/update user data in Firestore
     const userRef = doc(db, 'users', user.uid);
-    const userSnap = await getDoc(userRef);
+    const userSnap = await firestoreGetDoc(userRef);
 
     if (!userSnap.exists()) {
       // Create new user document if it doesn't exist
@@ -313,7 +419,7 @@ const verifyPhoneCode = async (verificationId, verificationCode) => {
       
       // Create or update user in Firestore
       const userRef = doc(db, 'users', user.uid);
-      const userSnap = await getDoc(userRef);
+      const userSnap = await firestoreGetDoc(userRef);
       
       if (!userSnap.exists()) {
         // Create new user record
@@ -418,31 +524,66 @@ const initiatePhoneAuth = async (phoneNumber, containerId = 'recaptcha-container
   }
 };
 
+/**
+ * Get user profile data from Firestore
+ * @param {string} userId - The user ID to fetch profile for
+ * @returns {Promise<object|null>} - The user profile data or null if not found
+ */
+const getUserProfile = async (userId) => {
+  if (!userId) return null;
+  
+  try {
+    const userDocRef = doc(db, 'users', userId);
+    const userDoc = await firestoreGetDoc(userDocRef);
+    
+    if (userDoc.exists()) {
+      return { id: userDoc.id, ...userDoc.data() };
+    } else {
+      console.log('No such user document!');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error getting user profile:', error);
+    return null;
+  }
+};
+
+// Then add getUserProfile to your exports list:
 export {
-  // Firebase services
-  auth,
-  db,
-  
-  // Email/Password authentication
-  registerWithEmailAndPassword,
-  loginWithEmailAndPassword,
-  
-  // Social authentication
-  signInWithGoogle,
-  signInWithFacebook,
-  signInWithApple,
-  
-  // Phone authentication
-  initiatePhoneAuth,
-  initializeRecaptcha,
-  sendPhoneVerificationCode,
-  verifyPhoneCode,
-  
-  // Password reset
-  sendPasswordResetWithRedirect,
-  verifyPasswordResetCode,
-  confirmPasswordReset,
-  
-  // Utility functions
-  checkUserExists,
+ // Firebase services
+ app,
+ auth,
+ db,
+ storage,
+ 
+ // Email/Password authentication
+ registerWithEmailAndPassword,
+ loginWithEmailAndPassword,
+ 
+ // Social authentication
+ signInWithGoogle,
+ signInWithFacebook,
+ signInWithApple,
+ 
+ // Phone authentication
+ initiatePhoneAuth,
+ initializeRecaptcha,
+ sendPhoneVerificationCode,
+ verifyPhoneCode,
+ 
+ // Password reset
+ sendPasswordResetWithRedirect,
+ verifyPasswordResetCode,
+ confirmPasswordReset,
+ 
+ // Utility functions
+ checkUserExists,
+ getUserProfile, // Add this line
+
+ // Storage methods
+ getStorage,
+ ref,
+ uploadBytes,
+ getDownloadURL,
+ deleteObject
 };

@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom';
 import { useDarkMode } from '../../contexts/DarkModeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { motion } from 'framer-motion';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -77,17 +78,47 @@ export default function Footer() {
   };
   
   // Get current language texts
-  const t = translations[language];
+  const t = translations[language] || translations.en;
+  
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  };
+  
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: 'spring', stiffness: 300, damping: 24 }
+    }
+  };
   
   return (
     <footer className={`${isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-content-light border-primary-100'} border-t w-full`}>
       {/* Main footer content */}
       <div className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-4 gap-8"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          variants={containerVariants}
+        >
           {/* Logo and description */}
-          <div className="col-span-1 md:col-span-1">
+          <motion.div 
+            className="col-span-1 md:col-span-1"
+            variants={itemVariants}
+          >
             <div 
-              className="font-heading font-bold text-2xl mb-4 gradient-text"
+              className="font-heading font-bold text-2xl mb-4"
               style={{
                 backgroundImage: 'linear-gradient(90deg, #319795, #3182CE)',
                 WebkitBackgroundClip: 'text',
@@ -117,10 +148,10 @@ export default function Footer() {
                 </svg>
               </a>
             </div>
-          </div>
+          </motion.div>
           
           {/* Quick links */}
-          <div>
+          <motion.div variants={itemVariants}>
             <h3 className={`${isDarkMode ? 'text-gray-200' : 'text-text-dark'} font-semibold mb-4`}>{t.quickLinks}</h3>
             <ul className="space-y-3">
               <li><Link to="/features" className={`${isDarkMode ? 'text-gray-400 hover:text-primary-400' : 'text-text hover:text-primary-500'} transition-colors text-sm`}>{t.features}</Link></li>
@@ -128,10 +159,10 @@ export default function Footer() {
               <li><Link to="/testimonials" className={`${isDarkMode ? 'text-gray-400 hover:text-primary-400' : 'text-text hover:text-primary-500'} transition-colors text-sm`}>{t.testimonials}</Link></li>
               <li><Link to="/blog" className={`${isDarkMode ? 'text-gray-400 hover:text-primary-400' : 'text-text hover:text-primary-500'} transition-colors text-sm`}>{t.blog}</Link></li>
             </ul>
-          </div>
+          </motion.div>
           
           {/* Resources */}
-          <div>
+          <motion.div variants={itemVariants}>
             <h3 className={`${isDarkMode ? 'text-gray-200' : 'text-text-dark'} font-semibold mb-4`}>{t.resources}</h3>
             <ul className="space-y-3">
               <li><Link to="/help" className={`${isDarkMode ? 'text-gray-400 hover:text-primary-400' : 'text-text hover:text-primary-500'} transition-colors text-sm`}>{t.helpCenter}</Link></li>
@@ -139,10 +170,10 @@ export default function Footer() {
               <li><Link to="/community" className={`${isDarkMode ? 'text-gray-400 hover:text-primary-400' : 'text-text hover:text-primary-500'} transition-colors text-sm`}>{t.community}</Link></li>
               <li><Link to="/events" className={`${isDarkMode ? 'text-gray-400 hover:text-primary-400' : 'text-text hover:text-primary-500'} transition-colors text-sm`}>{t.events}</Link></li>
             </ul>
-          </div>
+          </motion.div>
           
           {/* Newsletter */}
-          <div>
+          <motion.div variants={itemVariants}>
             <h3 className={`${isDarkMode ? 'text-gray-200' : 'text-text-dark'} font-semibold mb-4`}>{t.stayUpdated}</h3>
             <p className={`${isDarkMode ? 'text-gray-400' : 'text-text'} text-sm mb-4`}>{t.subscribeText}</p>
             <form className="space-y-2">
@@ -162,8 +193,8 @@ export default function Footer() {
               </div>
               <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-text-muted'}`}>{t.privacyNotice}</p>
             </form>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
       
       {/* Bottom footer */}
